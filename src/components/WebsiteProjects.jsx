@@ -95,10 +95,10 @@ const WebsiteProjects = () => {
           .website-projects-slider { padding-left: 0; padding-right: 0; }
           .website-projects-slider .slider-wrapper { padding-left: 32px; padding-right: 32px; }
           .website-projects-slider .slider-card {
-            flex: 0 0 100vw;
-            max-width: 100vw;
-            margin-left: 0;
-            margin-right: 0;
+            flex: 0 0 90vw;
+            max-width: 90vw;
+            margin-left: auto;
+            margin-right: auto;
             aspect-ratio: auto;
             display: flex;
             justify-content: center;
@@ -111,7 +111,7 @@ const WebsiteProjects = () => {
             box-shadow: 0 4px 24px 0 rgba(99,102,241,0.10);
             border-radius: 18px;
             width: 100%;
-            max-width: 98vw;
+            max-width: 90vw;
             margin: 0 auto;
             box-sizing: border-box;
             word-break: break-word;
