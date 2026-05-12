@@ -92,16 +92,61 @@ const WebsiteProjects = () => {
           .website-projects-slider .slider-card{flex:0 0 calc((100% - 1rem)/2);max-width:48%}
         }
         @media (max-width: 768px){
-          .website-projects-slider .slider-card{flex:0 0 88%;max-width:88%;aspect-ratio:auto}
-          .website-projects-slider .nav-button{display:none}
-          .website-projects-slider{padding-left:8px;padding-right:8px}
-          .website-projects-slider .project-card{min-height:430px}
+          .website-projects-slider { padding-left: 0; padding-right: 0; }
+          .website-projects-slider .slider-wrapper { padding-left: 32px; padding-right: 32px; }
+          .website-projects-slider .slider-card {
+            flex: 0 0 100vw;
+            max-width: 100vw;
+            margin-left: 0;
+            margin-right: 0;
+            aspect-ratio: auto;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0;
+          }
+          .website-projects-slider .project-card {
+            min-height: 430px;
+            padding: 1.1rem 0.7rem 1.2rem 0.7rem;
+            box-shadow: 0 4px 24px 0 rgba(99,102,241,0.10);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 98vw;
+            margin: 0 auto;
+            box-sizing: border-box;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          .website-projects-slider .project-title, .website-projects-slider .project-description {
+            word-break: break-word;
+            overflow-wrap: break-word;
+          }
           .website-projects-slider .project-image{height:150px}
-          .website-projects-slider .project-title{font-size:1rem}
-          .website-projects-slider .project-description{font-size:.78rem;line-height:1.45}
+          .website-projects-slider .project-title{font-size:1.1rem}
+          .website-projects-slider .project-description{font-size:.88rem;line-height:1.5}
+          .website-projects-slider .nav-button {
+            display: flex;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #030014;
+            border: 2px solid rgba(255,255,255,0.08);
+            z-index: 20;
+            box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+            align-items: center;
+            justify-content: center;
+          }
+          .website-projects-slider .nav-button.prev { left: 2px; }
+          .website-projects-slider .nav-button.next { right: 2px; }
         }
         @media (max-width: 480px){
-          .website-projects-slider .slider-card{flex:0 0 92%;max-width:92%}
+          .website-projects-slider .slider-card{flex:0 0 98vw;max-width:98vw}
           .website-projects-slider .project-card{min-height:400px;padding:1rem}
           .website-projects-slider .project-image{height:138px}
         }
@@ -124,12 +169,10 @@ const WebsiteProjects = () => {
           </p>
         </div>
         <div className="website-projects-slider">
-          {!isMobile && (
-            <>
-              <button type="button" aria-label="Previous" className="nav-button prev" onClick={goPrev}><ChevronLeft size={18} /></button>
-              <button type="button" aria-label="Next" className="nav-button next" onClick={goNext}><ChevronRight size={18} /></button>
-            </>
-          )}
+          <>
+            <button type="button" aria-label="Previous" className="nav-button prev" onClick={goPrev}><ChevronLeft size={20} /></button>
+            <button type="button" aria-label="Next" className="nav-button next" onClick={goNext}><ChevronRight size={20} /></button>
+          </>
           <div ref={sliderRef} className="slider-wrapper">
           {projects.map(p => (
             <div key={p.id} className="slider-card">
