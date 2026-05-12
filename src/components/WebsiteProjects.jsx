@@ -48,7 +48,7 @@ const projects = [
   {
     id: 7,
     title: 'LagnaPatra Studio',
-    description: 'Developed a dynamic web applications using HTML for My LagnaPatra Studio, a most popular digital wedding invitation websites studio.',
+    description: 'Developed web applications using HTML for My LagnaPatra Studio,most popular digital wedding invitation websites studio.',
     image: getSupabaseImageUrl('website-projects-images', 'lagnapatra-studio.webp'),
     url: 'https://lagnapatra.vercel.app'
   },
@@ -120,7 +120,7 @@ const WebsiteProjects = () => {
         }
         @media (max-width: 768px) {
           .slider-card {
-            flex: 0 0 85vw;
+            flex: 0 0 80vw;
             max-width: 70vw;
             margin-left: 0;
             margin-right: 0;
@@ -223,7 +223,7 @@ const WebsiteProjects = () => {
                   </div>
                   <div className="flex flex-col flex-1 p-4 px-6 pb-2">
                     <h3 className="text-2xl font-bold text-white mb-2 truncate drop-shadow">{project.title}</h3>
-                    <p className="text-gray-200 text-base mb-4 flex-grow line-clamp-3 font-light">{project.description}</p>
+                    <p className="text-gray-200 text-base mb-2 line-clamp-3 font-light">{project.description}</p>
                     <a
                       href={project.url}
                       target="_blank"
