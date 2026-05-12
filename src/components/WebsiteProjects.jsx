@@ -228,7 +228,7 @@ const WebsiteProjects = () => {
                       href={project.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-16 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold shadow-md hover:scale-105 transition-transform"
+                      className="mt-12 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold shadow-md hover:scale-105 transition-transform"
                     >
                       Live Preview <ExternalLink className="w-5 h-5" />
                     </a>
