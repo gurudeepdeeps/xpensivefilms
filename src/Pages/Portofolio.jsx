@@ -42,6 +42,13 @@ export default function FullWidthTabs() {
     }
   }, [activeCategory, isMobile]);
 
+  // Add this effect to handle category changes on mobile
+  useEffect(() => {
+    if (isMobile && mobileScrollRef.current) {
+      mobileScrollRef.current.scrollLeft = 0;
+    }
+  }, [activeCategory, isMobile]);
+
   // filter slides based on activeCategory; returns indices of slides that have at least one card matching category
   const visibleSlideIndices = slides
     .map((s, idx) => ({ idx, has: s.cards.some(c => activeCategory === 'all' ? true : c.category === activeCategory) }))
