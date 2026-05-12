@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, memo, useMemo } from "react";
+import SEO from "../components/SEO";
 import {
   FileText,
   Code,
@@ -226,6 +227,11 @@ const AboutPage = () => {
       className="h-auto pb-10 text-white overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%] mt-0"
       id="About"
     >
+      <SEO 
+        title="About Xpensive Media - Our Story & Mission"
+        description="Learn about Xpensive Media, a passionate team of digital marketing and web development experts dedicated to delivering innovative solutions and measurable results."
+        keywords="About Xpensive Media, Digital Marketing Agency, Company Mission, Web Development Experts"
+      />
       <Header />
 
       <div className="w-full mx-auto pt-8 sm:pt-12 relative">

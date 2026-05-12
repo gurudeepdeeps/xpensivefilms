@@ -196,6 +196,8 @@ CTAButton.propTypes = {
   icon: PropTypes.elementType.isRequired,
 };
 
+import SEO from '../components/SEO';
+
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -221,6 +223,12 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden" id="Home">
+      <SEO 
+        title="Xpensive Media - Premier Digital Marketing & Web Development"
+        description="Xpensive Media offers top-tier digital marketing, SEO, and web development services to elevate your brand. Drive growth with our innovative and results-driven solutions."
+        keywords="Digital Marketing, Xpensive Media, Web Development, SEO Services, Social Media Marketing, Content Creation"
+        type="website"
+      />
       <div
         className={`relative z-10 transition-all duration-1000 ${
           isLoaded ? "opacity-100" : "opacity-0"

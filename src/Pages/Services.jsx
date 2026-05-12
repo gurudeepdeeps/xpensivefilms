@@ -1,5 +1,6 @@
 import React, { memo, useState } from "react";
 import { getSupabaseImageUrl } from "../utils/supabaseImages";
+import SEO from "../components/SEO";
 
 const Services = memo(() => {
   const [loadedImages, setLoadedImages] = useState({});
@@ -76,103 +77,110 @@ const Services = memo(() => {
   ];
 
   return (
-    // add id so hash links (#Services) can find this section
-    <section id="Services" className="w-full relative overflow-hidden py-16 bg-transparent">
-      {/* Background layers */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* transparent base so underlying page background/grid shows through */}
-        <div className="absolute inset-0 bg-transparent" />
+    <>
+      <SEO 
+        title="Our Services - Digital Marketing & Web Development | Xpensive Media"
+        description="Explore the comprehensive digital marketing and web development services offered by Xpensive Media, including SEO, PPC, social media, and custom website design."
+        keywords="Digital Marketing Services, Web Development, SEO, PPC Management, Social Media Marketing, Website Design"
+      />
+      {/* add id so hash links (#Services) can find this section */}
+      <section id="Services" className="w-full relative overflow-hidden py-16 bg-transparent">
+        {/* Background layers */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          {/* transparent base so underlying page background/grid shows through */}
+          <div className="absolute inset-0 bg-transparent" />
 
-        {/* subtle layered radial glows (indigo -> purple) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 10% 20%, rgba(99,102,241,0.16), transparent 18%)," +
-              "radial-gradient(circle at 85% 75%, rgba(168,85,247,0.12), transparent 22%)",
-          }}
-        />
-
-        {/* larger soft blur blobs for extra depth */}
-        <div className="absolute -inset-40 opacity-30">
+          {/* subtle layered radial glows (indigo -> purple) */}
           <div
-            className="absolute -inset-40 rounded-full blur-3xl"
+            className="absolute inset-0"
             style={{
-              background:
-                "radial-gradient(circle at 20% 30%, rgba(99,102,241,0.14), transparent 25%)",
+              backgroundImage:
+                "radial-gradient(circle at 10% 20%, rgba(99,102,241,0.16), transparent 18%)," +
+                "radial-gradient(circle at 85% 75%, rgba(168,85,247,0.12), transparent 22%)",
             }}
           />
+
+          {/* larger soft blur blobs for extra depth */}
+          <div className="absolute -inset-40 opacity-30">
+            <div
+              className="absolute -inset-40 rounded-full blur-3xl"
+              style={{
+                background:
+                  "radial-gradient(circle at 20% 30%, rgba(99,102,241,0.14), transparent 25%)",
+              }}
+            />
+            <div
+              className="absolute -inset-56 rounded-full blur-2xl"
+              style={{
+                background:
+                  "radial-gradient(circle at 80% 70%, rgba(168,85,247,0.10), transparent 26%)",
+              }}
+            />
+          </div>
+
+          {/* faint grid lines like Home: two perpendicular repeating linear-gradients */}
           <div
-            className="absolute -inset-56 rounded-full blur-2xl"
+            className="absolute inset-0 opacity-6"
             style={{
-              background:
-                "radial-gradient(circle at 80% 70%, rgba(168,85,247,0.10), transparent 26%)",
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)," +
+                "linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+              backgroundSize: "36px 36px, 36px 36px",
+              mixBlendMode: "overlay",
             }}
           />
         </div>
 
-        {/* faint grid lines like Home: two perpendicular repeating linear-gradients */}
-        <div
-          className="absolute inset-0 opacity-6"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)," +
-              "linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "36px 36px, 36px 36px",
-            mixBlendMode: "overlay",
-          }}
-        />
-      </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 bg-transparent">
+          <h3
+            className="text-center text-4xl md:text-5xl font-bold mb-12 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
+            We Offer
+          </h3>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 bg-transparent">
-        <h3
-          className="text-center text-4xl md:text-5xl font-bold mb-12 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
-          data-aos="fade-up"
-          data-aos-duration="800"
-        >
-          We Offer
-        </h3>
+          {/* Change grid to show 2 columns on mobile and desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
+            {servicesData.map((service, i) => (
+              <div
+                key={service.id}
+                className="w-full flex flex-col justify-between h-full gap-2 bg-transparent p-3 sm:p-4 rounded-lg"
+                data-aos="fade-up"
+                data-aos-duration={900 + i * 50}
+              >
+                <div className="w-full h-[180px] sm:h-[220px] lg:h-[210px] xl:h-[240px] max-w-none sm:max-w-[320px] sm:mx-auto rounded-lg overflow-hidden bg-gradient-to-r from-purple-700 to-indigo-600 shadow-lg border border-white/10 p-1">
+                  <div className="relative w-full h-full rounded-lg overflow-hidden">
+                    {!loadedImages[service.id] && (
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse" />
+                    )}
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+                        loadedImages[service.id] ? "opacity-100" : "opacity-0"
+                      }`}
+                      loading="lazy"
+                      onLoad={() => handleImageLoaded(service.id)}
+                      onError={() => handleImageLoaded(service.id)}
+                    />
+                  </div>
+                </div>
 
-        {/* Change grid to show 2 columns on mobile and desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
-          {servicesData.map((service, i) => (
-            <div
-              key={service.id}
-              className="w-full flex flex-col justify-between h-full gap-2 bg-transparent p-3 sm:p-4 rounded-lg"
-              data-aos="fade-up"
-              data-aos-duration={900 + i * 50}
-            >
-              <div className="w-full h-[180px] sm:h-[220px] lg:h-[210px] xl:h-[240px] max-w-none sm:max-w-[320px] sm:mx-auto rounded-lg overflow-hidden bg-gradient-to-r from-purple-700 to-indigo-600 shadow-lg border border-white/10 p-1">
-                <div className="relative w-full h-full rounded-lg overflow-hidden">
-                  {!loadedImages[service.id] && (
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse" />
-                  )}
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
-                      loadedImages[service.id] ? "opacity-100" : "opacity-0"
-                    }`}
-                    loading="lazy"
-                    onLoad={() => handleImageLoaded(service.id)}
-                    onError={() => handleImageLoaded(service.id)}
-                  />
+                <div className="w-full">
+                  <h4 className="text-white font-bold text-xs sm:text-base mb-1">
+                    {service.title}
+                  </h4>
+                  <p className="text-[0.6rem] sm:text-xs text-gray-300 leading-tight">
+                    {service.description}
+                  </p>
                 </div>
               </div>
-
-              <div className="w-full">
-                <h4 className="text-white font-bold text-xs sm:text-base mb-1">
-                  {service.title}
-                </h4>
-                <p className="text-[0.6rem] sm:text-xs text-gray-300 leading-tight">
-                  {service.description}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 });
 

@@ -10,15 +10,25 @@
 	padding: 0;
 	box-sizing: border-box;
 	font-family: "Poppins", serif;
-	 scroll-behavior: smooth;
 	 /* For Chrome, Safari, Edge use ::-webkit-scrollbar below */
+}
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 html,
 body {
 	overflow-x: hidden;
 	background: #030014;
-	scroll-behavior: smooth !important;
 	/* Ensure mobile browsers don't unexpectedly scale text */
 	-webkit-text-size-adjust: 100%;
 	-moz-text-size-adjust: 100%;
