@@ -223,12 +223,12 @@ const WebsiteProjects = () => {
                   </div>
                   <div className="flex flex-col flex-1 p-4 px-6 pb-2">
                     <h3 className="text-2xl font-bold text-white mb-2 truncate drop-shadow">{project.title}</h3>
-                    <p className="text-gray-200 text-base mb-2 line-clamp-3 font-light">{project.description}</p>
+                    <p className="text-gray-200 text-sm mb-2 font-light">{project.description}</p>
                     <a
                       href={project.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-12 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold shadow-md hover:scale-105 transition-transform"
+                      className="inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold shadow-md hover:scale-105 transition-transform whitespace-nowrap"
                     >
                       Live Preview <ExternalLink className="w-5 h-5" />
                     </a>
