@@ -175,7 +175,7 @@ const WebsiteProjects = () => {
             border-radius: 14px;
           }
           .nav-button.prev { left: -30px; }
-          .nav-button.next { right: 0px; }
+          .nav-button.next { right: -30px; }
         }
 
         .project-card-glass {
