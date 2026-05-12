@@ -45,6 +45,13 @@ const projects = [
     image: getSupabaseImageUrl('website-projects-images', 'ms-properties.webp'),
     url: 'https://ms-properties.vercel.app'
   },
+  {
+    id: 7,
+    title: 'LagnaPatra Studio',
+    description: 'Developed a dynamic web applications using HTML for My LagnaPatra Studio, a most popular digital wedding invitation websites studio.',
+    image: getSupabaseImageUrl('website-projects-images', 'lagnapatra-studio.webp'),
+    url: 'https://lagnapatra.vercel.app'
+  },
 ];
 
 const WebsiteProjects = () => {
@@ -68,7 +75,7 @@ const WebsiteProjects = () => {
   }, []);
 
   return (
-    <section id="WebsiteProjects" className="relative py-20 overflow-hidden bg-transparent">
+    <section id="WebsiteProjects" className="relative py-20 bg-transparent">
       <style>{`
         .website-projects-slider {
           position: relative;
@@ -80,7 +87,7 @@ const WebsiteProjects = () => {
           overflow-x: auto;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
-          padding: 24px 0;
+          padding: 24px 2rem;
           scrollbar-width: none;
           -ms-overflow-style: none;
           scroll-behavior: smooth;
@@ -89,30 +96,32 @@ const WebsiteProjects = () => {
           display: none;
         }
         .slider-card {
-          flex: 0 0 420px;
-          max-width: 420px;
-          margin-left: 2rem;
-          margin-right: 2rem;
-          scroll-snap-align: center;
+          flex: 0 0 280px;
+          max-width: 280px;
+          margin-left: 0;
+          margin-right: 0;
+          scroll-snap-align: start;
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           justify-content: center;
         }
-        .slider-wrapper {
-          justify-content: center;
-        }
+
         @media (max-width: 1024px) {
+          .slider-wrapper {
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
           .slider-card {
             flex: 0 0 340px;
             max-width: 340px;
-            margin-left: 1rem;
-            margin-right: 1rem;
+            margin-left: 0;
+            margin-right: 0;
           }
         }
         @media (max-width: 768px) {
           .slider-card {
-            flex: 0 0 80vw;
-            max-width: 80vw;
+            flex: 0 0 65vw;
+            max-width: 65vw;
             margin-left: 0;
             margin-right: 0;
           }
@@ -156,7 +165,7 @@ const WebsiteProjects = () => {
         
         @media (max-width: 1280px) {
           .nav-button.prev { left: -10px; }
-          .nav-button.next { right: -10px; }
+          .nav-button.next { right: -20px; }
         }
 
         @media (max-width: 768px) {
@@ -165,23 +174,22 @@ const WebsiteProjects = () => {
             height: 44px;
             border-radius: 14px;
           }
-          .nav-button.prev { left: 10px; }
-          .nav-button.next { right: 10px; }
+          .nav-button.prev { left: -30px; }
+          .nav-button.next { right: 0px; }
         }
 
         .project-card-glass {
-          background: transparent;
-          backdrop-filter: none;
-          border: none;
-          box-shadow: none;
+          background: rgba(11, 7, 32, 0.6);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          /* aspect-ratio removed for full transparency */
           display: flex;
           flex-direction: column;
           position: relative;
           overflow: hidden;
         }
-        
+
         /* Removed ::before and all hover effects for static appearance */
         
         /* Removed ::after gradient overlay for full transparency */
@@ -194,17 +202,17 @@ const WebsiteProjects = () => {
       `}</style>
 
       {/* Recreated Web Creations Section */}
-      <section className="relative py-16 px-4 sm:px-8 flex flex-col items-center" style={{ background: 'transparent', boxShadow: 'none' }}>
-        <div className="relative z-10 w-full max-w-2xl mx-auto text-center mb-12">
-          <h2 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-[#7f5af0] via-[#6366f1] to-[#a855f7] bg-clip-text text-transparent mb-4 tracking-tight">Web Creations</h2>
+      <section className="relative bg-transparent  px-4 sm:px-8 flex flex-col items-center" style={{ background: 'transparent', boxShadow: 'none' }}>
+        <div className="relative z-10 w-full max-w-7xl mx-auto text-center mb-4">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-[#7f5af0] via-[#6366f1] to-[#a855f7] bg-clip-text text-transparent mb-4 tracking-tight">Web Creations</h2>
           <p className="text-lg md:text-2xl text-slate-200 mb-6 font-light">Crafting immersive digital experiences through clean code and innovative design solutions.</p>
         </div>
-        <div className="relative w-full max-w-2xl mx-auto flex items-center">
+        <div className="relative w-full max-w-7xl mx-auto flex items-center">
           <button type="button" aria-label="Previous" className="nav-button prev absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-br from-[#6366f1] to-[#a855f7] shadow-lg" onClick={goPrev}><ChevronLeft size={28} /></button>
-          <div ref={sliderRef} className="slider-wrapper flex gap-8 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth w-full justify-center items-center">
+          <div ref={sliderRef} className="slider-wrapper flex gap-8 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth w-full items-center">
             {projects.map((project) => (
-              <div key={project.id} className="slider-card flex-shrink-0 snap-center flex justify-center items-center">
-                <div className="project-card-glass rounded-3xl overflow-hidden flex flex-col h-[600px] relative mx-auto">
+              <div key={project.id} className="slider-card flex-shrink-0 snap-start flex justify-center items-center">
+                <div className="project-card-glass rounded-3xl overflow-hidden flex flex-col h-[500px] relative mx-auto">
                   <div className="image-container relative h-52 w-full overflow-hidden">
                     <img
                       src={project.image}
@@ -213,7 +221,7 @@ const WebsiteProjects = () => {
                       onLoad={() => handleImageLoaded(project.id)}
                     />
                   </div>
-                  <div className="flex flex-col flex-1 p-6 bg-transparent">
+                  <div className="flex flex-col flex-1 p-4 px-6 pb-2">
                     <h3 className="text-2xl font-bold text-white mb-2 truncate drop-shadow">{project.title}</h3>
                     <p className="text-gray-200 text-base mb-4 flex-grow line-clamp-3 font-light">{project.description}</p>
                     <a
