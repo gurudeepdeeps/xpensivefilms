@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { getSupabaseImageUrl } from '../utils/supabaseImages';
 
 const projects = [
@@ -50,14 +50,6 @@ const projects = [
 const WebsiteProjects = () => {
   const [loadedImages, setLoadedImages] = useState({});
   const sliderRef = useRef(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  React.useEffect(() => {
-    const updateViewport = () => setIsMobile(window.innerWidth <= 768);
-    updateViewport();
-    window.addEventListener('resize', updateViewport);
-    return () => window.removeEventListener('resize', updateViewport);
-  }, []);
 
   const handleImageLoaded = (id) => {
     setLoadedImages((prev) => ({ ...prev, [id]: true }));
@@ -66,144 +58,183 @@ const WebsiteProjects = () => {
   const goNext = useCallback(() => {
     const el = sliderRef.current;
     if (!el) return;
-    el.scrollBy({ left: Math.round(el.clientWidth * 0.86), behavior: 'smooth' });
+    el.scrollBy({ left: Math.round(el.clientWidth * 0.8), behavior: 'smooth' });
   }, []);
 
   const goPrev = useCallback(() => {
     const el = sliderRef.current;
     if (!el) return;
-    el.scrollBy({ left: -Math.round(el.clientWidth * 0.86), behavior: 'smooth' });
+    el.scrollBy({ left: -Math.round(el.clientWidth * 0.8), behavior: 'smooth' });
   }, []);
 
   return (
-    <section id="WebsiteProjects" className="portfolio-style-section pt-16 pb-0">
+    <section id="WebsiteProjects" className="relative py-20 overflow-hidden bg-transparent">
       <style>{`
-        .portfolio-style-section { background: transparent; overflow: hidden; }
-        .website-projects-slider{width:100%;max-width:900px;margin:0 auto;position:relative;background:transparent}
-        .website-projects-slider .slider-wrapper{display:flex;gap:1rem;align-items:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none}
-        .website-projects-slider .slider-wrapper::-webkit-scrollbar{display:none}
-        .website-projects-slider .slider-card{flex:0 0 calc((100% - 2rem)/3);max-width:280px;scroll-snap-align:center;border-radius:12px;overflow:hidden;background:transparent;cursor:pointer}
-        .website-projects-slider .project-card{min-height:520px}
-        .website-projects-slider .nav-button{position:absolute;top:50%;transform:translateY(-50%);width:45px;height:45px;border-radius:12px;background:#030014;border:2px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;z-index:10}
-        .website-projects-slider .nav-button.prev{left:10px}
-        .website-projects-slider .nav-button.next{right:10px}
-        .website-projects-slider .showcase-title{font-size:3rem;font-weight:700;margin-bottom:2rem;background:linear-gradient(45deg,#6366f1,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
-        @media (max-width: 1024px){
-          .website-projects-slider .slider-card{flex:0 0 calc((100% - 1rem)/2);max-width:48%}
+        .website-projects-slider {
+          position: relative;
+          padding: 0 10px;
         }
-        @media (max-width: 768px){
-          .website-projects-slider { padding-left: 0; padding-right: 0; }
-          .website-projects-slider .slider-wrapper { padding-left: 32px; padding-right: 32px; }
-          .website-projects-slider .slider-card {
-            flex: 0 0 90vw;
-            max-width: 90vw;
-            margin-left: auto;
-            margin-right: auto;
-            aspect-ratio: auto;
-            display: flex;
-            justify-content: center;
-            box-sizing: border-box;
-            padding: 0;
-          }
-          .website-projects-slider .project-card {
-            min-height: 430px;
-            padding: 1.1rem 0.7rem 1.2rem 0.7rem;
-            box-shadow: 0 4px 24px 0 rgba(99,102,241,0.10);
-            border-radius: 18px;
-            width: 100%;
-            max-width: 90vw;
-            margin: 0 auto;
-            box-sizing: border-box;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-          }
-          .website-projects-slider .project-title, .website-projects-slider .project-description {
-            word-break: break-word;
-            overflow-wrap: break-word;
-          }
-          .website-projects-slider .project-image{height:150px}
-          .website-projects-slider .project-title{font-size:1.1rem}
-          .website-projects-slider .project-description{font-size:.88rem;line-height:1.5}
-          .website-projects-slider .nav-button {
-            display: flex;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #030014;
-            border: 2px solid rgba(255,255,255,0.08);
-            z-index: 20;
-            box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
-            align-items: center;
-            justify-content: center;
-          }
-          .website-projects-slider .nav-button.prev { left: 2px; }
-          .website-projects-slider .nav-button.next { right: 2px; }
+        .slider-wrapper {
+          display: flex;
+          gap: 1.5rem;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          padding: 24px 0;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          scroll-behavior: smooth;
         }
-        @media (max-width: 480px){
-          .website-projects-slider .slider-card{flex:0 0 98vw;max-width:98vw}
-          .website-projects-slider .project-card{min-height:400px;padding:1rem}
-          .website-projects-slider .project-image{height:138px}
+        .slider-wrapper::-webkit-scrollbar {
+          display: none;
+        }
+        .slider-card {
+          flex: 0 0 420px;
+          max-width: 420px;
+          margin-left: 2rem;
+          margin-right: 2rem;
+          scroll-snap-align: center;
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          justify-content: center;
+        }
+        .slider-wrapper {
+          justify-content: center;
+        }
+        @media (max-width: 1024px) {
+          .slider-card {
+            flex: 0 0 340px;
+            max-width: 340px;
+            margin-left: 1rem;
+            margin-right: 1rem;
+          }
+        }
+        @media (max-width: 768px) {
+          .slider-card {
+            flex: 0 0 80vw;
+            max-width: 80vw;
+            margin-left: 0;
+            margin-right: 0;
+          }
+          .slider-wrapper {
+            gap: 1rem;
+            padding-left: 10vw;
+            padding-right: 10vw;
+          }
+        }
+        .nav-button {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 52px;
+          height: 52px;
+          border-radius: 18px;
+          background: rgba(11, 7, 32, 0.9);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          z-index: 30;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        .nav-button:hover {
+          background: rgba(99, 102, 241, 1);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-50%) scale(1.1);
+          box-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
+        }
+        .nav-button:active {
+          transform: translateY(-50%) scale(0.95);
+        }
+        .nav-button.prev { left: -25px; }
+        .nav-button.next { right: -25px; }
+        
+        @media (max-width: 1280px) {
+          .nav-button.prev { left: -10px; }
+          .nav-button.next { right: -10px; }
+        }
+
+        @media (max-width: 768px) {
+          .nav-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+          }
+          .nav-button.prev { left: 10px; }
+          .nav-button.next { right: 10px; }
+        }
+
+        .project-card-glass {
+          background: transparent;
+          backdrop-filter: none;
+          border: none;
+          box-shadow: none;
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          /* aspect-ratio removed for full transparency */
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        /* Removed ::before and all hover effects for static appearance */
+        
+        /* Removed ::after gradient overlay for full transparency */
+
+        .live-preview-btn {
+          position: relative;
+          z-index: 1;
+          overflow: hidden;
         }
       `}</style>
-      <div className="showcase-container px-6 mx-auto max-w-6xl">
-        <div className="text-center mb-0">
-          <h3 className="inline-block text-3xl md:text-5xl font-bold mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7] showcase-title">
-            <span style={{
-              color: '#6366f1',
-              backgroundImage: 'linear-gradient(45deg, #6366f1 10%, #a855f7 93%)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              Website Projects
-            </span>
-          </h3>
-          <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-1">
-            Explore my journey through projects, and technical expertise. Each section represents a milestone in my continuous learning path.
-          </p>
+
+      {/* Recreated Web Creations Section */}
+      <section className="relative py-16 px-4 sm:px-8 flex flex-col items-center" style={{ background: 'transparent', boxShadow: 'none' }}>
+        <div className="relative z-10 w-full max-w-2xl mx-auto text-center mb-12">
+          <h2 className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-[#7f5af0] via-[#6366f1] to-[#a855f7] bg-clip-text text-transparent mb-4 tracking-tight">Web Creations</h2>
+          <p className="text-lg md:text-2xl text-slate-200 mb-6 font-light">Crafting immersive digital experiences through clean code and innovative design solutions.</p>
         </div>
-        <div className="website-projects-slider">
-          <>
-            <button type="button" aria-label="Previous" className="nav-button prev" onClick={goPrev}><ChevronLeft size={20} /></button>
-            <button type="button" aria-label="Next" className="nav-button next" onClick={goNext}><ChevronRight size={20} /></button>
-          </>
-          <div ref={sliderRef} className="slider-wrapper">
-          {projects.map(p => (
-            <div key={p.id} className="slider-card">
-              <div className="project-card bg-[#0b0720] rounded-2xl p-5 sm:p-6 shadow-lg border border-white/5 h-full flex flex-col justify-between min-h-[520px] sm:min-h-[560px]">
-                <div>
-                  <div className="rounded-lg overflow-hidden mb-6">
-                    {!loadedImages[p.id] && (
-                      <div className="project-image w-full h-44 rounded-lg bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse" />
-                    )}
+        <div className="relative w-full max-w-2xl mx-auto flex items-center">
+          <button type="button" aria-label="Previous" className="nav-button prev absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-br from-[#6366f1] to-[#a855f7] shadow-lg" onClick={goPrev}><ChevronLeft size={28} /></button>
+          <div ref={sliderRef} className="slider-wrapper flex gap-8 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth w-full justify-center items-center">
+            {projects.map((project) => (
+              <div key={project.id} className="slider-card flex-shrink-0 snap-center flex justify-center items-center">
+                <div className="project-card-glass rounded-3xl overflow-hidden flex flex-col h-[600px] relative mx-auto">
+                  <div className="image-container relative h-52 w-full overflow-hidden">
                     <img
-                      src={p.image}
-                      alt={p.title}
-                      className={`project-image w-full h-44 sm:h-56 object-cover rounded-lg ${loadedImages[p.id] ? 'opacity-100' : 'opacity-0'}`}
-                      loading="lazy"
-                      onLoad={() => handleImageLoaded(p.id)}
-                      onError={() => handleImageLoaded(p.id)}
+                      src={project.image}
+                      alt={project.title}
+                      className={`w-full h-full object-cover transition-transform duration-700 ${loadedImages[project.id] ? 'opacity-100' : 'opacity-0'}`}
+                      onLoad={() => handleImageLoaded(project.id)}
                     />
                   </div>
-                  <h4 className="project-title text-xl font-bold text-white mb-2">{p.title}</h4>
-                  <p className="project-description text-gray-400 text-sm mb-4 leading-relaxed">{p.description}</p>
-                </div>
-
-                <div className="flex justify-center mt-4">
-                  <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-block bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white px-4 py-2 rounded-lg">Live Website</a>
+                  <div className="flex flex-col flex-1 p-6 bg-transparent">
+                    <h3 className="text-2xl font-bold text-white mb-2 truncate drop-shadow">{project.title}</h3>
+                    <p className="text-gray-200 text-base mb-4 flex-grow line-clamp-3 font-light">{project.description}</p>
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold shadow-md hover:scale-105 transition-transform"
+                    >
+                      Live Preview <ExternalLink className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
+          <button type="button" aria-label="Next" className="nav-button next absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-br from-[#6366f1] to-[#a855f7] shadow-lg" onClick={goNext}><ChevronRight size={28} /></button>
         </div>
-      </div>
+        {/* Decorative blurred backgrounds removed for cleaner look */}
+      </section>
+      
+      {/* Decorative background elements removed for cleaner look */}
     </section>
   );
 };
