@@ -120,7 +120,7 @@ const WebsiteProjects = () => {
         }
         @media (max-width: 768px) {
           .slider-card {
-            flex: 0 0 80vw;
+            flex: 0 0 85vw;
             max-width: 70vw;
             margin-left: 0;
             margin-right: 0;
