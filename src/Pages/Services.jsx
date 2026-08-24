@@ -79,8 +79,8 @@ const Services = memo(() => {
   return (
     <>
       <SEO 
-        title="Our Services - Digital Marketing & Web Development | Xpensive Media"
-        description="Explore the comprehensive digital marketing and web development services offered by Xpensive Media, including SEO, PPC, social media, and custom website design."
+        title="Our Services - Digital Marketing & Web Development | Xpensive Films"
+        description="Explore the comprehensive digital marketing and web development services offered by Xpensive Films, including SEO, PPC, social media, and custom website design."
         keywords="Digital Marketing Services, Web Development, SEO, PPC Management, Social Media Marketing, Website Design"
       />
       {/* add id so hash links (#Services) can find this section */}

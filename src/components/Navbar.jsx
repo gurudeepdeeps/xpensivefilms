@@ -119,9 +119,16 @@ const Navbar = () => {
                     <a
                         href="#Home"
                         onClick={(e) => scrollToSection(e, "#Home")}
-                        className="text-xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent"
+                        className="flex items-center gap-3 text-xl font-bold"
                     >
-                        Xpensive Media
+                        <img 
+                            src="/xfilms-logo.webp" 
+                            alt="Xpensive Films Logo" 
+                            className="h-9 w-auto object-contain transition-transform duration-300 hover:scale-105" 
+                        />
+                        <span className="bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent">
+                            Xpensive Films
+                        </span>
                     </a>
                 </div>
 

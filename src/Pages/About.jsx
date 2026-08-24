@@ -58,9 +58,9 @@ const ProfileImage = memo(() => (
           <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-transparent to-blue-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 hidden sm:block" />
 
           <img
-            src="/Xpenive-Media.jpg"
-            alt="Profile"
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
+            src="/xfilms-logo.webp"
+            alt="Xpensive Films Logo"
+            className="w-full h-full object-contain p-4 transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
             loading="lazy"
           />
 
@@ -228,9 +228,9 @@ const AboutPage = () => {
       id="About"
     >
       <SEO 
-        title="About Xpensive Media - Our Story & Mission"
-        description="Learn about Xpensive Media, a passionate team of digital marketing and web development experts dedicated to delivering innovative solutions and measurable results."
-        keywords="About Xpensive Media, Digital Marketing Agency, Company Mission, Web Development Experts"
+        title="About Xpensive Films - Our Story & Mission"
+        description="Learn about Xpensive Films, a passionate team of digital marketing and web development experts dedicated to delivering innovative solutions and measurable results."
+        keywords="About Xpensive Films, Digital Marketing Agency, Company Mission, Web Development Experts"
       />
       <Header />
 
@@ -250,7 +250,7 @@ const AboutPage = () => {
                 data-aos="fade-right"
                 data-aos-duration="1300"
               >
-                Xpensive Media
+                Xpensive Films
               </span>
             </h2>
 

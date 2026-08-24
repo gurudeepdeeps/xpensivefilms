@@ -1,6 +1,6 @@
-# 🚀 Xpensive Media Portfolio
+# 🚀 Xpensive Films Portfolio
 
-A modern, interactive portfolio website for Xpensive Media, showcasing creative projects, services, and brand identity.
+A modern, interactive portfolio website for Xpensive Films, showcasing creative projects, services, and brand identity.
 
 ## 📔 Table of Contents
 - [Features](#features)
@@ -33,11 +33,11 @@ A modern, interactive portfolio website for Xpensive Media, showcasing creative 
 - Modern UI with Tailwind CSS, MUI, and custom gradients
 
 ## 🌐 Demo
-Live demo: [https://xpensivemedia.vercel.app]
+Live demo: [https://xpensivefilms.vercel.app]
 
 ## ‼️ Folder Structure
 ```
-Xpensive Media Portfolio/
+Xpensive Films Portfolio/
 ├── public/
 │   ├── CardProject_images/
 │   ├── services-images/
@@ -75,7 +75,7 @@ Xpensive Media Portfolio/
 2. Clone this repository:
    ```bash
    git clone <repo-url>
-   cd Xpensive Media Portfolio
+   cd Xpensive Films Portfolio
    ```
 3. Install dependencies:
    ```bash
@@ -122,21 +122,10 @@ Xpensive Media Portfolio/
    const supabaseKey = "YOUR_SUPABASE_KEY";
    export const supabase = createClient(supabaseUrl, supabaseKey);
    ```
-4. Replace placeholders with your actual Supabase credentials.
 
-> For security, use environment variables and never commit your keys to public repositories.
-
-## 💻 Usage
-- Visit the homepage for an animated introduction.
-- Explore the About, Services, Portfolio, and Contact pages.
-- Portfolio section displays categorized video/image projects.
-- Services section highlights offerings with images and descriptions.
-
-## 📷 Screenshots
-> Some screenshots of the website
-
-> Home Page
-- ![Animated Home Page](public/screenshots/home.png)
+## 📸 Screenshots
+> Main Landing Page
+- ![Modern Portfolio Landing Page](public/screenshots/main.png)
 > About Page
 - ![Modern About Page](public/screenshots/about.png)
 > Works Page
@@ -171,7 +160,7 @@ The main video carousels/grids are driven by `src/constants/portfolioVideos.js`.
 3. Ensure `category` matches a key in `videoCategories`.
 
 ## 🔧 Stats
-- [PageSpeed Insights - Vercel](https://pagespeed.web.dev/analysis?url=https://xpensivemedia.vercel.app)
+- [PageSpeed Insights - Vercel](https://pagespeed.web.dev/analysis?url=https://xpensivefilms.vercel.app)
 - [PageSpeed Insights - Netlify](https://pagespeed.web.dev/analysis?url=https://gurudeepv-portfolio.netlify.app)
 
 ## 🙌 Contribute
@@ -194,15 +183,9 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 📬 Contact
 - Gurudeep V
-- [Portfolio Website](https://xpensivemedia.vercel.app)
-- [Email](mailto:xpensivemedia.co@gmail.com)
+- [Portfolio Website](https://xpensivefilms.vercel.app)
+- [Email](mailto:xpensivefilms.co@gmail.com)
 
 ---
 
 > **Readme by DEEPS**
-
-To edit Download CV and View projects - first you need to import the file to src/assets/file. Go to About.jsx and in line 261 you can find:
-// make sure to change the name at line 14: import ResumePDF from '../assets/Gurudeep V Resume.pdf';
-
-To edit TOTAL PROJECTS, HAPPY CLIENTS, YEARS OF EXPERIENCE data - go to About.jsx and in line 195 you will find it. Total project automatic count is set to 50+, you can change to automatic by replacing 50+ to totalProjects in line 201: value: "50+", to value: totalProjects,
-

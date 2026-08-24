@@ -224,9 +224,9 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden" id="Home">
       <SEO 
-        title="Xpensive Media - Premier Digital Marketing & Web Development"
-        description="Xpensive Media offers top-tier digital marketing, SEO, and web development services to elevate your brand. Drive growth with our innovative and results-driven solutions."
-        keywords="Digital Marketing, Xpensive Media, Web Development, SEO Services, Social Media Marketing, Content Creation"
+        title="Xpensive Films - Premier Digital Marketing & Web Development"
+        description="Xpensive Films offers top-tier digital marketing, SEO, and web development services to elevate your brand. Drive growth with our innovative and results-driven solutions."
+        keywords="Digital Marketing, Xpensive Films, Web Development, SEO Services, Social Media Marketing, Content Creation"
         type="website"
       />
       <div

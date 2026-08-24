@@ -21,36 +21,36 @@ const socialLinks = [
   {
     name: "Instagram",
     displayName: "Instagram",
-    subText: "@xpensivemedia.co",
+    subText: "@_x.films",
     icon: Instagram,
-    url: "https://www.instagram.com/xpensivemedia.co",
+    url: "https://www.instagram.com/_x.films",
     color: "#E4405F",
     gradient: "from-[#833AB4] via-[#E4405F] to-[#FCAF45]"
   },
   {
     name: "YouTube",
     displayName: "Youtube",
-    subText: "@XpensiveMediaYT",
+    subText: "@xpensive_films",
     icon: Youtube,
-    url: "https://www.youtube.com/@XpensiveMediaYT",
+    url: "https://www.youtube.com/@xpensive_films",
     color: "#FF0000",
     gradient: "from-[#FF0000] to-[#CC0000]"
   },
   {
     name: "Email",
     displayName: "Email",
-    subText: "xpensivemedia.co@gmail.com",
+    subText: "xpensivefilms.co@gmail.com",
     icon: Mail,
-    url: "mailto:xpensivemedia.co@gmail.com",
+    url: "mailto:xpensivefilms.co@gmail.com",
     color: "#ffffff",
     gradient: "from-[#333] to-[#24292e]"
   },
   {
     name: "LinkedIn",
     displayName: "LinkedIn",
-    subText: "@xpensivemedia",
+    subText: "@xpensivefilms",
     icon: Linkedin,
-    url: "https://www.linkedin.com/in/xpensivemedia",
+    url: "https://www.linkedin.com/in/xpensivefilms",
     color: "white",
     gradient: "from-[#000000] via-[#25F4EE] to-[#FE2C55]"
   }
