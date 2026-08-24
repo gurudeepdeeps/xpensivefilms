@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; 
  import { db, storage } from '../firebase-comment'; 
  import { UserCircle2, Loader2, AlertCircle, Send, ImagePlus, X } from 'lucide-react'; 
+ import { Alert, AlertTitle, AlertDescription } from './ui/alert';
  import AOS from "aos"; 
  import "aos/dist/aos.css"; 
  
@@ -83,11 +84,12 @@ import PropTypes from 'prop-types';
              </div> 
  
              {error && (
-                 <div className="flex items-center gap-2 text-red-400 text-sm" data-aos="fade-up" data-aos-duration="1600">
-                     <AlertCircle className="w-4 h-4" />
-                     <span>{error}</span>
-                 </div>
-             )}
+                <Alert variant="destructive" data-aos="fade-up" data-aos-duration="1600">
+                    <AlertCircle className="w-4 h-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
  
              <button
                  type="submit"
