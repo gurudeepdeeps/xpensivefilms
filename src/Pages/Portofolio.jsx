@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Play, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '../supabase';
-import { videoCategories, videoSlides } from '../constants/portfolioVideos';
 import WebsiteProjects from '../components/WebsiteProjects';
+import { Badge } from '../components/ui/badge';
 
 export default function FullWidthTabs() {
   const carouselRef = useRef(null);
@@ -23,14 +23,38 @@ export default function FullWidthTabs() {
     });
   }, []);
 
-  const categories = videoCategories;
-  const slides = videoSlides;
+  const [dbCategories, setDbCategories] = useState([]);
+  const [dbVideos, setDbVideos] = useState([]);
+
+  // Fetch dynamic categories & videos from Supabase
+  useEffect(() => {
+    async function loadPortfolioFromSupabase() {
+      try {
+        const { data: catData } = await supabase.from('video_categories').select('*');
+        if (catData) setDbCategories(catData);
+
+        const { data: vidData } = await supabase.from('portfolio_videos').select('*');
+        if (vidData) setDbVideos(vidData);
+      } catch (e) {
+        console.error("Supabase load portfolio failed:", e);
+      }
+    }
+    loadPortfolioFromSupabase();
+  }, []);
+
+  const categories = useMemo(() => {
+    return [{ key: 'all', label: 'All', icon: 'grid' }, ...dbCategories];
+  }, [dbCategories]);
+
+  const slides = useMemo(() => {
+    return [{ id: 0, cards: dbVideos }];
+  }, [dbVideos]);
 
   const filteredCards = useMemo(() => {
     if (activeCategory === 'all') {
       return slides.flatMap(slide => slide.cards);
     }
-    return slides.flatMap(slide => 
+    return slides.flatMap(slide =>
       slide.cards.filter(card => card.category === activeCategory)
     );
   }, [activeCategory, slides]);
@@ -58,6 +82,16 @@ export default function FullWidthTabs() {
   // flattened list of cards matching the active category (useful for mobile swipe mode)
   // const filteredCards = slides.flatMap(s => s.cards).filter(c => activeCategory === 'all' ? true : c.category === activeCategory);
 
+  // Helper: synchronous URL resolver for video tags
+  const getVideoUrl = useCallback((path) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
+      return path;
+    }
+    const { data } = supabase.storage.from('portfolio-videos').getPublicUrl(path);
+    return data?.publicUrl || path;
+  }, []);
+
   // Helper: resolve a storage path to a download URL and assign to <video>
   async function safeAssignVideoSrc(el, path) {
     if (!el || !path) return false;
@@ -76,7 +110,7 @@ export default function FullWidthTabs() {
 
       return false;
     } catch (e) {
-      try { console.error('[portfolio] assign video src failed', path, e); } catch(_) {}
+      try { console.error('[portfolio] assign video src failed', path, e); } catch (_) { }
       return false;
     }
   }
@@ -88,7 +122,7 @@ export default function FullWidthTabs() {
       const url = await getDownloadURL(ref(storage, path));
       return url;
     } catch (e) {
-      try { console.error('[portfolio] preload video url failed', path, e); } catch(_) {}
+      try { console.error('[portfolio] preload video url failed', path, e); } catch (_) { }
       return null;
     }
   }
@@ -99,7 +133,7 @@ export default function FullWidthTabs() {
     const container = carouselRef.current;
     const wrapper = container?.querySelector('.carousel-item.active .slider-wrapper');
     if (wrapper) {
-      try { wrapper.scrollTo({ left: 0, behavior: 'instant' }); } catch (_) {}
+      try { wrapper.scrollTo({ left: 0, behavior: 'instant' }); } catch (_) { }
     }
   }, [activeCategory, visibleSlideIndices]);
   useEffect(() => {
@@ -175,32 +209,32 @@ export default function FullWidthTabs() {
               if (ds) {
                 (async () => {
                   const ok = await safeAssignVideoSrc(v, ds);
-                  if (ok) try { console.log('[portfolio] set src', ds); } catch(_) {}
-                  else try { console.error('[portfolio] invalid video source, skipping', ds); } catch(_) {}
+                  if (ok) try { console.log('[portfolio] set src', ds); } catch (_) { }
+                  else try { console.error('[portfolio] invalid video source, skipping', ds); } catch (_) { }
                 })();
               }
             }
             // Ensure attributes that allow muted autoplay and eager loading
             v.preload = 'auto';
-            try { v.loading = 'eager'; } catch(_) { }
+            try { v.loading = 'eager'; } catch (_) { }
             v.muted = true;
             v.setAttribute('muted', '');
             v.playsInline = true;
             v.setAttribute('playsinline', '');
             v.autoplay = true;
             v.setAttribute('autoplay', '');
-            v.loop = true; v.setAttribute('loop','');
+            v.loop = true; v.setAttribute('loop', '');
 
             v.load();
 
             const tryPlay = () => {
               try {
-                try { console.log('[portfolio] tryPlay', v.src); } catch(_) {}
+                try { console.log('[portfolio] tryPlay', v.src); } catch (_) { }
                 const p = v.play();
                 if (p && typeof p.then === 'function') {
-                  p.then(() => { try { console.log('[portfolio] played', v.src); } catch(_) {} }).catch((err) => { try { console.error('[portfolio] play failed', v.src, err); } catch(_) {} });
+                  p.then(() => { try { console.log('[portfolio] played', v.src); } catch (_) { } }).catch((err) => { try { console.error('[portfolio] play failed', v.src, err); } catch (_) { } });
                 }
-              } catch (e) { try { console.error('[portfolio] play exception', v.src, e); } catch(_) {} }
+              } catch (e) { try { console.error('[portfolio] play exception', v.src, e); } catch (_) { } }
             };
 
             if (v.readyState >= 2) {
@@ -223,11 +257,11 @@ export default function FullWidthTabs() {
             try {
               if (!v.src) {
                 const ds = v.getAttribute('data-src');
-                if (ds) { (async () => { const ok = await safeAssignVideoSrc(v, ds); if (ok) try { console.log('[portfolio] preload assigned', ds); } catch(_) {} else try { console.error('[portfolio] preload assign failed', ds); } catch(_) {} })(); }
+                if (ds) { (async () => { const ok = await safeAssignVideoSrc(v, ds); if (ok) try { console.log('[portfolio] preload assigned', ds); } catch (_) { } else try { console.error('[portfolio] preload assign failed', ds); } catch (_) { } })(); }
               }
               v.preload = 'auto';
-              try { v.loading = 'eager'; } catch(_) {}
-              v.muted = true; v.setAttribute('muted',''); v.playsInline = true; v.setAttribute('playsinline',''); v.autoplay = true; v.setAttribute('autoplay','');
+              try { v.loading = 'eager'; } catch (_) { }
+              v.muted = true; v.setAttribute('muted', ''); v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.setAttribute('autoplay', '');
               v.load();
             } catch (e) { void e; }
           });
@@ -245,35 +279,35 @@ export default function FullWidthTabs() {
         try {
           if (!v.src) {
             const ds = v.getAttribute('data-src');
-            if (ds) { 
-              (async () => { 
-                const ok = await safeAssignVideoSrc(v, ds); 
+            if (ds) {
+              (async () => {
+                const ok = await safeAssignVideoSrc(v, ds);
                 if (ok) {
-                  try { console.log('[portfolio] initial preload assigned', ds); } catch(_) {}
+                  try { console.log('[portfolio] initial preload assigned', ds); } catch (_) { }
                   v.load();
                   setTimeout(() => {
                     try {
-                      const playPromise = modalVideoRef.current.play();
-                      if (playPromise && typeof playPromise.then === 'function') {
-                        playPromise.catch(err => {
-                          console.error('[portfolio] modal video play failed', err);
-                        });
+                      if (v) {
+                        const playPromise = v.play();
+                        if (playPromise && typeof playPromise.then === 'function') {
+                          playPromise.catch(() => {});
+                        }
                       }
                     } catch (e) {
-                      console.error('[portfolio] modal play error', e);
+                      void e;
                     }
                   }, 100);
                 } else {
-                  try { console.error('[portfolio] initial preload failed', ds); } catch(_) {}
+                  try { console.error('[portfolio] initial preload failed', ds); } catch (_) { }
                 }
-              })(); 
+              })();
             }
           }
           v.preload = 'auto';
-          try { v.loading = 'eager'; } catch(_) {}
-          v.muted = true; v.setAttribute('muted', ''); v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.setAttribute('autoplay', ''); v.loop = true; v.setAttribute('loop','');
+          try { v.loading = 'eager'; } catch (_) { }
+          v.muted = true; v.setAttribute('muted', ''); v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.setAttribute('autoplay', ''); v.loop = true; v.setAttribute('loop', '');
           v.load();
-          setTimeout(() => { try { const p = v.play(); if (p && typeof p.then === 'function') p.catch(() => {}); } catch (e) { void e; } }, 500);
+          setTimeout(() => { try { const p = v.play(); if (p && typeof p.then === 'function') p.catch(() => { }); } catch (e) { void e; } }, 500);
         } catch (e) { void e; }
       });
     } catch (e) { void e; }
@@ -295,9 +329,9 @@ export default function FullWidthTabs() {
                 (async () => {
                   const ok = await safeAssignVideoSrc(v, ds);
                   if (ok) {
-                    try { console.log('[portfolio] set src (observer)', ds); } catch(_) {}
+                    try { console.log('[portfolio] set src (observer)', ds); } catch (_) { }
                     v.preload = 'metadata';
-                    try { v.loading = 'eager'; } catch(_) { }
+                    try { v.loading = 'eager'; } catch (_) { }
                     v.muted = true;
                     v.setAttribute('muted', '');
                     v.playsInline = true;
@@ -309,7 +343,7 @@ export default function FullWidthTabs() {
                     const onReady = () => {
                       try {
                         const p = v.play();
-                        if (p && typeof p.then === 'function') p.catch(() => {});
+                        if (p && typeof p.then === 'function') p.catch(() => { });
                       } catch (e) { void e; }
                     };
 
@@ -325,7 +359,7 @@ export default function FullWidthTabs() {
                 })();
               }
             } else {
-               if (v.paused) v.play().catch(() => {});
+              if (v.paused) v.play().catch(() => { });
             }
           } catch (e) { void e; }
         } else {
@@ -362,30 +396,31 @@ export default function FullWidthTabs() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Auto-play modal video when opened and pause/cleanup when closed
+  // Auto-play modal video when opened with sound & default browser/system controls
   useEffect(() => {
     const v = modalVideoRef.current;
     if (modalOpen && v) {
-      // ensure we start from beginning
       v.currentTime = 0;
-      // mute modal before playback so autoplay will be allowed by browsers
-      v.muted = true;
-      try { console.log('[portfolio] modal open, attempting play', modalSrc); } catch(_) {}
+      v.muted = false;
       const tryPlay = () => {
         try {
-          try { console.log('[portfolio] modal tryPlay', modalSrc); } catch(_) {}
           const p = v.play();
           if (p && typeof p.then === 'function') {
-            p.then(() => { try { console.log('[portfolio] modal played', modalSrc); } catch(_) {} }).catch((err) => { try { console.error('[portfolio] modal play failed', modalSrc, err); } catch(_) {} });
+            p.catch(() => {
+              // Fallback to muted autoplay if browser blocks unmuted playback
+              v.muted = true;
+              v.play().catch(() => {});
+            });
           }
-        } catch (e) { try { console.error('[portfolio] modal play exception', modalSrc, e); } catch(_) {} }
+        } catch (_) {}
       };
 
       if (v.readyState >= 2) {
         tryPlay();
       } else {
         const onLoaded = () => tryPlay();
-        v.addEventListener('loadedmetadata', onLoaded, { once: true });
+        v.addEventListener('loadeddata', onLoaded, { once: true });
+        v.addEventListener('canplay', onLoaded, { once: true });
       }
     }
 
@@ -394,43 +429,11 @@ export default function FullWidthTabs() {
     }
   }, [modalOpen, modalSrc]);
 
-  const openModal = async (path, title) => {
-    setModalTitle(title);
+  const openModal = (path, title = '') => {
+    setModalTitle(title || '');
+    const realUrl = getVideoUrl(path);
+    setModalSrc(realUrl);
     setModalOpen(true);
-    
-    try {
-      const directUrl = /^https?:\/\//i.test(path) || path.startsWith('/');
-      if (directUrl) {
-        setModalSrc(path);
-      } else {
-        // Get the public URL from Supabase
-        const { data } = supabase.storage.from('portfolio-videos').getPublicUrl(path);
-        if (data && data.publicUrl) {
-          setModalSrc(data.publicUrl);
-        } else {
-          console.error('[portfolio] failed to get public URL', path);
-        }
-      }
-    } catch (e) {
-      console.error('[portfolio] modal URL fetch error', e);
-    }
-
-    // Play video after DOM updates
-    setTimeout(() => {
-      if (modalVideoRef.current) {
-        modalVideoRef.current.load();
-        try {
-          const playPromise = modalVideoRef.current.play();
-          if (playPromise && typeof playPromise.then === 'function') {
-            playPromise.catch(err => {
-              console.error('[portfolio] modal video play failed', err);
-            });
-          }
-        } catch (e) {
-          console.error('[portfolio] modal play error', e);
-        }
-      }
-    }, 150);
   };
 
   const closeModal = () => {
@@ -465,48 +468,6 @@ export default function FullWidthTabs() {
         margin: 0 auto; 
         padding: 0 2rem; 
       }
-      
-      .category-list { 
-        display: flex; 
-        gap: 0.75rem; 
-        overflow-x: auto; 
-        padding: 0.5rem 1rem; 
-        justify-content: center; 
-        align-items: center; 
-        scrollbar-width: none; 
-      }
-      
-      .category-list::-webkit-scrollbar { display: none; }
-      
-      .category-item { 
-        padding: 0.7rem 1.6rem; 
-        background: rgba(255, 255, 255, 0.05); 
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1); 
-        border-radius: 50px; 
-        color: rgba(255, 255, 255, 0.7); 
-        cursor: pointer; 
-        white-space: nowrap; 
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-        font-weight: 600; 
-        font-size: 0.9rem; 
-        letter-spacing: 0.025em;
-      }
-      
-      .category-item:hover { 
-        background: rgba(255, 255, 255, 0.1); 
-        color: #fff; 
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-      }
-      
-      .category-item.active { 
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
-        border-color: transparent; 
-        color: #fff; 
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); 
-      }
-      
       .slider-section { 
         padding: 2rem 0; 
         min-height: 50vh; 
@@ -658,152 +619,139 @@ export default function FullWidthTabs() {
           </p>
         </div>
 
-        <nav className="category-nav mb-12">
-          <div className="category-container">
-            <div className="category-wrapper">
-              <div className="category-list">
-                {categories.map(cat => (
-                  <button
-                    key={cat.key}
-                    className={`category-item ${activeCategory === cat.key ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat.key)}
-                    type="button"
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {categories.length > 1 && (
+          <div className="flex items-center gap-2 mt-6 mb-12 overflow-x-auto max-w-full px-4 py-2 sm:flex-wrap sm:justify-center scrollbar-none whitespace-nowrap">
+            {categories.map((cat) => (
+              <Badge
+                key={cat.key}
+                variant={activeCategory === cat.key ? 'default' : 'secondary'}
+                onClick={() => setActiveCategory(cat.key)}
+                className={`cursor-pointer transition-all px-4 py-1.5 text-xs shrink-0 whitespace-nowrap ${
+                  activeCategory === cat.key
+                    ? 'scale-105 shadow-md shadow-indigo-500/20'
+                    : 'hover:bg-white/10'
+                }`}
+              >
+                {cat.label}
+              </Badge>
+            ))}
           </div>
-        </nav>
+        )}
 
         <section>
-          <div className="slider-section">
-            <div className="slider-container" ref={carouselRef}>
-              <div className="carousel-inner">
-                {isMobile ? (
-                  <div className={`carousel-item active`}>
-                    <div className="slider-wrapper flat-slider" ref={mobileScrollRef}>
-                      {filteredCards.map((card, idx) => (
-                        (() => {
-                          const videoKey = card.path || `mobile-${idx}`;
-                          return (
-                        <div
-                          key={idx}
-                          className="slider-card video-card"
-                          data-category={card.category}
-                          onClick={() => openModal(card.path, card.title)}
-                        >
-                          <div className="video-thumbnail-wrapper" style={{position: 'relative', height: '100%'}}>
-                            {!loadedVideos[videoKey] && <div className="video-skeleton" />}
-                            <video
-                              className={`video-thumbnail showcase-video ${loadedVideos[videoKey] ? 'ready' : 'loading'}`}
-                              data-src={card.path}
-                              muted
-                              autoPlay
-                              loop
-                              preload={isMobile ? "metadata" : "auto"}
-                              playsInline
-                              crossOrigin="anonymous"
-                              poster="/Conquer_Media.jpg"
-                              onLoadedData={() => handleVideoReady(videoKey)}
-                              onCanPlay={() => handleVideoReady(videoKey)}
-                              onError={(e) => {
-                                handleVideoReady(videoKey);
-                                try { e.currentTarget.pause(); } catch(_) { void 0; }
-                              }}
-                              loading="eager"
-                            />
-                            <div className="video-overlay">
-                              <div className="video-play-btn"><Play size={20} /></div>
-                            </div>
-                          </div>
-                        </div>
-                          );
-                        })()
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  slides.map((slide, sIdx) => {
-                    const visible = slide.cards.some(c => activeCategory === 'all' ? true : c.category === activeCategory);
-                    return (
-                      <div key={slide.id} className={`carousel-item ${sIdx === activeIndex && visible ? 'active' : ''}`}>
-                        <div className="slider-wrapper">
-                          {slide.cards.map((card, cIdx) => (
-                            (activeCategory === 'all' || card.category === activeCategory) && (
-                              (() => {
-                                const videoKey = card.path || `desktop-${slide.id}-${cIdx}`;
-                                return (
+          {filteredCards.length === 0 ? (
+            <div className="py-20 text-center text-gray-400 space-y-3 bg-white/5 rounded-3xl border border-white/10 my-8 max-w-3xl mx-auto backdrop-blur-xl">
+              <p className="text-xl font-semibold text-slate-200">No Videos Available.</p>
+              <p className="text-sm text-purple-300">New creative video reels coming soon. Stay tuned!</p>
+            </div>
+          ) : (
+            <div className="slider-section">
+              <div className="slider-container" ref={carouselRef}>
+                <div className="carousel-inner">
+                  {isMobile ? (
+                    <div className={`carousel-item active`}>
+                      <div className="slider-wrapper flat-slider" ref={mobileScrollRef}>
+                        {filteredCards.map((card, idx) => (
+                          (() => {
+                            const videoKey = card.path || `mobile-${idx}`;
+                            return (
                               <div
-                                key={cIdx}
+                                key={idx}
                                 className="slider-card video-card"
                                 data-category={card.category}
                                 onClick={() => openModal(card.path, card.title)}
                               >
-                                <div className="video-thumbnail-wrapper" style={{position: 'relative', height: '100%'}}>
+                                <div className="video-thumbnail-wrapper" style={{ position: 'relative', height: '100%' }}>
                                   {!loadedVideos[videoKey] && <div className="video-skeleton" />}
                                   <video
                                     className={`video-thumbnail showcase-video ${loadedVideos[videoKey] ? 'ready' : 'loading'}`}
+                                    src={getVideoUrl(card.path)}
                                     data-src={card.path}
                                     muted
                                     autoPlay
                                     loop
                                     preload={isMobile ? "metadata" : "auto"}
                                     playsInline
-                                     crossOrigin="anonymous"
-                                     poster="/Conquer_Media.jpg"
-                                     onLoadedData={() => handleVideoReady(videoKey)}
-                                     onCanPlay={() => handleVideoReady(videoKey)}
-                                     onError={(e) => {
-                                       handleVideoReady(videoKey);
-                                       try { e.currentTarget.pause(); } catch(_) { void 0; }
-                                     }}
-                                     loading="eager"
-                                   />
+                                    crossOrigin="anonymous"
+                                    poster="/Conquer_Media.jpg"
+                                    onLoadedData={() => handleVideoReady(videoKey)}
+                                    onCanPlay={() => handleVideoReady(videoKey)}
+                                    onError={(e) => {
+                                      handleVideoReady(videoKey);
+                                      try { e.currentTarget.pause(); } catch (_) { void 0; }
+                                    }}
+                                    loading="eager"
+                                  />
                                   <div className="video-overlay">
                                     <div className="video-play-btn"><Play size={20} /></div>
                                   </div>
                                 </div>
                               </div>
-                                );
-                              })()
-                            )
-                          ))}
-                        </div>
+                            );
+                          })()
+                        ))}
                       </div>
-                    );
-                  })
-                )}
+                    </div>
+                  ) : (
+                    slides.map((slide, sIdx) => {
+                      const visible = slide.cards.some(c => activeCategory === 'all' ? true : c.category === activeCategory);
+                      return (
+                        <div key={slide.id} className={`carousel-item ${sIdx === activeIndex && visible ? 'active' : ''}`}>
+                          <div className="slider-wrapper">
+                            {slide.cards.map((card, cIdx) => (
+                              (activeCategory === 'all' || card.category === activeCategory) && (
+                                (() => {
+                                  const videoKey = card.path || `desktop-${slide.id}-${cIdx}`;
+                                  return (
+                                    <div
+                                      key={cIdx}
+                                      className="slider-card video-card"
+                                      data-category={card.category}
+                                      onClick={() => openModal(card.path, card.title)}
+                                    >
+                                      <div className="video-thumbnail-wrapper" style={{ position: 'relative', height: '100%' }}>
+                                        {!loadedVideos[videoKey] && <div className="video-skeleton" />}
+                                        <video
+                                          className={`video-thumbnail showcase-video ${loadedVideos[videoKey] ? 'ready' : 'loading'}`}
+                                          src={getVideoUrl(card.path)}
+                                          data-src={card.path}
+                                          muted
+                                          autoPlay
+                                          loop
+                                          preload={isMobile ? "metadata" : "auto"}
+                                          playsInline
+                                          crossOrigin="anonymous"
+                                          poster="/Conquer_Media.jpg"
+                                          onLoadedData={() => handleVideoReady(videoKey)}
+                                          onCanPlay={() => handleVideoReady(videoKey)}
+                                          onError={(e) => {
+                                            handleVideoReady(videoKey);
+                                            try { e.currentTarget.pause(); } catch (_) { void 0; }
+                                          }}
+                                          loading="eager"
+                                        />
+                                        <div className="video-overlay">
+                                          <div className="video-play-btn"><Play size={20} /></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
 
-                {/* Navigation Buttons */}
-                <button type="button" aria-label="Previous" className="nav-button prev" onClick={goPrev}><ChevronLeft /></button>
-                <button type="button" aria-label="Next" className="nav-button next" onClick={goNext}><ChevronRight /></button>
+                  {/* Navigation Buttons */}
+                  <button type="button" aria-label="Previous" className="nav-button prev" onClick={goPrev}><ChevronLeft /></button>
+                  <button type="button" aria-label="Next" className="nav-button next" onClick={goNext}><ChevronRight /></button>
+                </div>
               </div>
-
-              {!isMobile && (
-                <ul className="portfolio-slider-dots slick-dots">
-                  {slides.map((_, i) => {
-                    const visible = visibleSlideIndices.includes(i);
-                    if (!visible) return null;
-                    const idx = i;
-                    return (
-                      <li key={i} className={idx === activeIndex ? 'slick-active' : ''}>
-                        <button
-                          onClick={() => setActiveIndex(idx)}
-                          aria-label={`Go to slide ${i + 1}`}
-                          type="button"
-                        >
-                          <span className="website-dot" />
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-
             </div>
-          </div>
+          )}
         </section>
 
         {/* Website Projects carousel section */}
@@ -811,48 +759,46 @@ export default function FullWidthTabs() {
 
         {/* Modal */}
         {modalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-            <div className="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden">
+          <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-2 sm:p-4 backdrop-blur-md">
+            <div className="relative w-full max-w-4xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+              {modalTitle && (
+                <div className="absolute top-3 left-4 z-10 font-medium text-xs sm:text-sm text-white/80 bg-black/60 px-3 py-1 rounded-full backdrop-blur-md">
+                  {modalTitle}
+                </div>
+              )}
               <button
                 onClick={closeModal}
-                className="absolute top-4 right-4 z-10 text-white bg-black/50 rounded-full p-2 hover:bg-black/80"
+                className="absolute top-3 right-3 z-10 text-white bg-black/60 rounded-full p-2 hover:bg-red-600 transition-colors backdrop-blur-md"
+                aria-label="Close video"
               >
-                ✕
+                <X size={18} />
               </button>
-              
+
               <video
                 ref={modalVideoRef}
                 key={modalSrc}
+                src={modalSrc}
                 controls
                 autoPlay
-                muted
-                className="w-full h-auto max-h-[80vh]"
-                onLoadedData={() => {
-                  try {
-                    modalVideoRef.current.muted = false;
-                    modalVideoRef.current?.play();
-                  } catch (e) {
-                    console.error('[portfolio] modal video loadeddata error', e);
-                  }
-                }}
+                playsInline
+                controlsList="nodownload"
+                className="w-full h-auto max-h-[85vh] rounded-2xl"
                 onCanPlay={() => {
                   try {
-                    modalVideoRef.current.muted = false;
-                    modalVideoRef.current?.play();
-                  } catch (e) {
-                    console.error('[portfolio] modal video canplay error', e);
-                  }
+                    const v = modalVideoRef.current;
+                    if (v) {
+                      v.muted = false;
+                      const p = v.play();
+                      if (p && typeof p.then === 'function') {
+                        p.catch(() => {
+                          v.muted = true;
+                          v.play().catch(() => {});
+                        });
+                      }
+                    }
+                  } catch (_) {}
                 }}
               >
-                {modalSrc && (
-                  <source 
-                    src={modalSrc} 
-                    type="video/mp4" 
-                    onError={(e) => {
-                      console.error('[portfolio] modal video source error', e);
-                    }}
-                  />
-                )}
                 Your browser does not support the video tag.
               </video>
             </div>

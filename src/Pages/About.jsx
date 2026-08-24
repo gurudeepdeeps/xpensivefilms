@@ -32,7 +32,7 @@ const Header = memo(() => (
       data-aos-duration="800"
     >
       <Sparkles className="w-5 h-5 text-purple-400" />
-      Creating Brands That People Remember
+      Xpensive by Quality, Not by Money.
       <Sparkles className="w-5 h-5 text-purple-400" />
     </div>
   </div>
@@ -149,7 +149,7 @@ const AboutPage = () => {
         today.getFullYear() -
         startDate.getFullYear() -
         (today <
-        new Date(today.getFullYear(), startDate.getMonth(), startDate.getDate())
+          new Date(today.getFullYear(), startDate.getMonth(), startDate.getDate())
           ? 1
           : 0);
 
@@ -227,7 +227,7 @@ const AboutPage = () => {
       className="h-auto pb-10 text-white overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%] mt-0"
       id="About"
     >
-      <SEO 
+      <SEO
         title="About Xpensive Films - Our Story & Mission"
         description="Learn about Xpensive Films, a passionate team of digital marketing and web development experts dedicated to delivering innovative solutions and measurable results."
         keywords="About Xpensive Films, Digital Marketing Agency, Company Mission, Web Development Experts"
@@ -259,7 +259,7 @@ const AboutPage = () => {
               data-aos="fade-right"
               data-aos-duration="1500"
             >
-              Creativity fuels us and Quality defines us. Our team specializes in delivering high-quality video edits that captivate and inspire. From smooth transitions to cinematic storytelling, we ensure every frame reflects our passion for perfection and originality.
+              Xpensive by Quality, Not by Money. Our team specializes in delivering high-quality video edits that captivate and inspire. From smooth transitions to cinematic storytelling, we ensure every frame reflects our passion for perfection and originality.
             </p>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">

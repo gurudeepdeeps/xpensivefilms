@@ -13,6 +13,7 @@ import ThankYouPage from "./Pages/ThankYou";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import Terms from "./Pages/Terms";
 import NotFound from "./Pages/NotFound";
+import AdminDashboard from "./Pages/Admin";
 import CookieConsent from "./components/CookieConsent";
 
 const Footer = () => (
@@ -104,6 +105,7 @@ function App() {
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CookieConsent />

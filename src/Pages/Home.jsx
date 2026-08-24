@@ -1,17 +1,15 @@
 import { useState, useEffect, memo } from "react";
-import SocialFloat from '../components/SocialFloat';
-import PropTypes from 'prop-types';
+import SocialFloat from "../components/SocialFloat";
+import PropTypes from "prop-types";
 import {
-  Github,
-  Linkedin,
-  Mail,
   ExternalLink,
-  Instagram,
+  Mail,
   Sparkles,
   Play,
 } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import SEO from "../components/SEO";
 
 // Timeline Animation Component
 const EditingTimelineAnimation = memo(({ isHovering }) => {
@@ -75,9 +73,7 @@ const EditingTimelineAnimation = memo(({ isHovering }) => {
               return (
                 <div
                   key={clip.id}
-                  className={`relative h-full flex items-center justify-center text-white/70 font-medium text-xs border-r border-white/5 transition-all duration-300 ${
-                    idx === 0 ? "" : ""
-                  }`}
+                  className="relative h-full flex items-center justify-center text-white/70 font-medium text-xs border-r border-white/5 transition-all duration-300"
                   style={{ width: `${widthPercent}%` }}
                 >
                   {/* Clip Background Gradient */}
@@ -102,7 +98,7 @@ const EditingTimelineAnimation = memo(({ isHovering }) => {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-purple-400/10 to-blue-400/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
         </div>
 
-        {/* Audio Waveform (Optional visual enhancement) */}
+        {/* Audio Waveform */}
         <div className="mt-4 flex items-end justify-around h-12 gap-0.5">
           {[...Array(24)].map((_, i) => (
             <div
@@ -127,9 +123,55 @@ const EditingTimelineAnimation = memo(({ isHovering }) => {
   );
 });
 
-EditingTimelineAnimation.displayName = 'EditingTimelineAnimation';
+EditingTimelineAnimation.displayName = "EditingTimelineAnimation";
 
-// Memoized Components
+// Individual Hero Skeleton Loader Components
+const StatusBadgeSkeleton = memo(() => (
+  <div className="inline-block mx-auto">
+    <div className="w-44 h-8 rounded-full bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse border border-white/10 shadow-lg" />
+  </div>
+));
+StatusBadgeSkeleton.displayName = "StatusBadgeSkeleton";
+
+const MainTitleSkeleton = memo(() => (
+  <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="h-12 sm:h-16 w-11/12 mx-auto rounded-2xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse border border-white/10" />
+    <div className="h-10 sm:h-14 w-2/3 mx-auto rounded-2xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse border border-white/10" />
+  </div>
+));
+MainTitleSkeleton.displayName = "MainTitleSkeleton";
+
+const CTAButtonsSkeleton = memo(() => (
+  <div className="flex flex-row gap-4 w-full justify-center mt-2">
+    <div className="w-[160px] h-11 rounded-xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse border border-white/10 shadow-md" />
+    <div className="w-[160px] h-11 rounded-xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:200%_100%] animate-pulse border border-white/10 shadow-md" />
+  </div>
+));
+CTAButtonsSkeleton.displayName = "CTAButtonsSkeleton";
+
+const TimelineAnimationSkeleton = memo(() => (
+  <div className="w-full max-w-lg h-[260px] sm:h-[320px] rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl p-6 flex flex-col justify-between animate-pulse">
+    <div className="flex justify-between items-center mb-4">
+      <div className="w-12 h-4 rounded bg-white/10 animate-pulse" />
+      <div className="w-12 h-4 rounded bg-white/10 animate-pulse" />
+      <div className="w-12 h-4 rounded bg-white/10 animate-pulse" />
+    </div>
+    <div className="w-full h-20 bg-white/5 rounded-xl border border-white/10 p-2 flex gap-2 items-center">
+      <div className="w-1/4 h-full rounded-lg bg-indigo-500/20 animate-pulse" />
+      <div className="w-1/3 h-full rounded-lg bg-purple-500/20 animate-pulse" />
+      <div className="w-1/4 h-full rounded-lg bg-pink-500/20 animate-pulse" />
+      <div className="w-1/6 h-full rounded-lg bg-red-500/20 animate-pulse" />
+    </div>
+    <div className="mt-4 flex items-end justify-around h-12 gap-1">
+      {[...Array(20)].map((_, i) => (
+        <div key={i} className="flex-1 bg-white/10 rounded-sm animate-pulse" style={{ height: `${((i % 5) + 1) * 18}%` }} />
+      ))}
+    </div>
+  </div>
+));
+TimelineAnimationSkeleton.displayName = "TimelineAnimationSkeleton";
+
+// Live Hero Components
 const StatusBadge = memo(() => (
   <div
     className="inline-block animate-float lg:mx-0"
@@ -148,7 +190,7 @@ const StatusBadge = memo(() => (
   </div>
 ));
 
-StatusBadge.displayName = 'StatusBadge';
+StatusBadge.displayName = "StatusBadge";
 
 const MainTitle = memo(() => (
   <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
@@ -156,14 +198,17 @@ const MainTitle = memo(() => (
       <span className="relative inline-block">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-          Digital Marketing &amp; <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">Video Editing</span>
+          Digital Marketing &amp;{" "}
+          <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+            Video Editing
+          </span>
         </span>
       </span>
     </h1>
   </div>
 ));
 
-MainTitle.displayName = 'MainTitle';
+MainTitle.displayName = "MainTitle";
 
 const CTAButton = memo(({ href, text, icon: Icon }) => (
   <a href={href}>
@@ -188,7 +233,7 @@ const CTAButton = memo(({ href, text, icon: Icon }) => (
   </a>
 ));
 
-CTAButton.displayName = 'CTAButton';
+CTAButton.displayName = "CTAButton";
 
 CTAButton.propTypes = {
   href: PropTypes.string.isRequired,
@@ -196,9 +241,8 @@ CTAButton.propTypes = {
   icon: PropTypes.elementType.isRequired,
 };
 
-import SEO from '../components/SEO';
-
 const Home = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -217,13 +261,17 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    setIsLoaded(true);
-    return () => setIsLoaded(false);
+    // Show individual skeleton loaders on load, then reveal content cleanly
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setIsLoaded(true);
+    }, 600);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden" id="Home">
-      <SEO 
+      <SEO
         title="Xpensive Films - Premier Digital Marketing & Web Development"
         description="Xpensive Films offers top-tier digital marketing, SEO, and web development services to elevate your brand. Drive growth with our innovative and results-driven solutions."
         keywords="Digital Marketing, Xpensive Films, Web Development, SEO Services, Social Media Marketing, Content Creation"
@@ -243,22 +291,32 @@ const Home = () => {
               data-aos-delay="200"
             >
               <div className="space-y-4 sm:space-y-6">
-                <StatusBadge />
-                <MainTitle />
+                {isLoading ? (
+                  <>
+                    <StatusBadgeSkeleton />
+                    <MainTitleSkeleton />
+                    <CTAButtonsSkeleton />
+                  </>
+                ) : (
+                  <>
+                    <StatusBadge />
+                    <MainTitle />
 
-                {/* CTA Buttons */}
-                <div
-                  className="flex flex-row gap-3 w-full justify-center"
-                  data-aos="fade-up"
-                  data-aos-delay="1400"
-                >
-                  <CTAButton
-                    href="#Portofolio"
-                    text="Projects"
-                    icon={ExternalLink}
-                  />
-                  <CTAButton href="#Contact" text="Contact" icon={Mail} />
-                </div>
+                    {/* CTA Buttons */}
+                    <div
+                      className="flex flex-row gap-3 w-full justify-center"
+                      data-aos="fade-up"
+                      data-aos-delay="1400"
+                    >
+                      <CTAButton
+                        href="#Portofolio"
+                        text="Projects"
+                        icon={ExternalLink}
+                      />
+                      <CTAButton href="#Contact" text="Contact" icon={Mail} />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -270,33 +328,37 @@ const Home = () => {
               data-aos="fade-left"
               data-aos-delay="600"
             >
-              <div className="relative w-full opacity-90">
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r from-[#6366f1]/10 to-[#a855f7]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
-                    isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
-                  }`}
-                ></div>
-
-                <div
-                  className={`relative z-10 w-full opacity-90 transform transition-transform duration-500 ${
-                    isHovering ? "scale-105" : "scale-100"
-                  }`}
-                >
-                  <EditingTimelineAnimation isHovering={isHovering} />
-                </div>
-
-                <div
-                  className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
-                    isHovering ? "opacity-50" : "opacity-20"
-                  }`}
-                >
+              {isLoading ? (
+                <TimelineAnimationSkeleton />
+              ) : (
+                <div className="relative w-full opacity-90">
                   <div
-                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
-                      isHovering ? "scale-110" : "scale-100"
+                    className={`absolute inset-0 bg-gradient-to-r from-[#6366f1]/10 to-[#a855f7]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
+                      isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
                     }`}
                   ></div>
+
+                  <div
+                    className={`relative z-10 w-full opacity-90 transform transition-transform duration-500 ${
+                      isHovering ? "scale-105" : "scale-100"
+                    }`}
+                  >
+                    <EditingTimelineAnimation isHovering={isHovering} />
+                  </div>
+
+                  <div
+                    className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
+                      isHovering ? "opacity-50" : "opacity-20"
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
+                        isHovering ? "scale-110" : "scale-100"
+                      }`}
+                    ></div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
