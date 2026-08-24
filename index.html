@@ -2,78 +2,117 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/webp" href="/xfilms-logo.webp" />
-    <link rel="apple-touch-icon" href="/xfilms-logo.webp" />
-    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Xpensive Films | Premier Video Editing, Digital Marketing & Web Development</title>
+    <meta name="title" content="Xpensive Films | Premier Video Editing, Digital Marketing & Web Development" />
     <meta
-      name="google-site-verification"
-      content="DbYLTPqp6NeHTn5JdtpPQpDpuebs8z08OMbrVT8Sits"
+      name="description"
+      content="Xpensive Films - Xpensive by Quality, Not by Money. Premier digital marketing agency specializing in high-impact video editing, corporate media, social media growth, and custom website development."
     />
     <meta
       name="keywords"
-      content="Xpensive Films - Agency"
+      content="Xpensive Films, Video Editing Agency, Digital Marketing Agency, Web Development, Corporate Event Videos, Real Estate Videos, Podcast Production, Social Media Marketing, SEO Services"
     />
     <meta name="author" content="Xpensive Films" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#030014" />
-    <!--[if !IE]><!-->
-    <meta name="msapplication-navbutton-color" content="#030014" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="#030014" />
-    <!--<![endif]-->
-    <!-- Note: 'theme-color' is not supported by Firefox for Android and Opera. Fallbacks added for best effort. -->
     <meta name="msapplication-TileColor" content="#030014" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="canonical" href="https://xpensivefilms.vercel.app/" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta
-      name="title"
-      content="Xpensive Films - Agency"
-    />
-    <meta
-      name="description"
-      content="Creating brands that people remember."
-    />
-    <meta name="robots" content="index, follow" />
-    <!-- Sitemap -->
+
+    <!-- Google Search Console & Bing Webmaster Verification -->
+    <meta name="google-site-verification" content="DbYLTPqp6NeHTn5JdtpPQpDpuebs8z08OMbrVT8Sits" />
+    <meta name="msvalidate.01" content="BING_WEBMASTER_VERIFICATION_CODE_HERE" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://xpensivefilms.vercel.app/" />
+
+    <!-- Sitemap & LLM Links -->
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
-    <!-- Favicons for multiple platforms -->
-    <link rel="icon" type="image/webp" sizes="32x32" href="/xfilms-logo.webp" />
-    <link rel="icon" type="image/webp" sizes="16x16" href="/xfilms-logo.webp" />
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Example: Google Fonts (uncomment if used) -->
-    <!-- <link href="https://fonts.googleapis.com/css2?family=YourFont:wght@400;700&display=swap" rel="stylesheet"> -->
-    <!-- Additional SEO meta tags -->
+    <link rel="alternate" type="text/markdown" title="LLM Documentation" href="/llms.txt" />
+
+    <!-- Favicons and App Manifest -->
+    <link rel="icon" type="image/webp" href="/xfilms-logo.webp" />
+    <link rel="apple-touch-icon" href="/xfilms-logo.webp" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Preconnect for Google Fonts & External Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Additional Meta Tags -->
     <meta name="copyright" content="Xpensive Films 2026" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="language" content="English" />
     <meta name="distribution" content="global" />
     <meta name="rating" content="general" />
-    <meta name="revisit-after" content="7 days" />
-    <!-- Open Graph / Facebook -->
+
+    <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Xpensive Films - Agency" />
-    <meta property="og:description" content="Creating brands that people remember." />
     <meta property="og:site_name" content="Xpensive Films" />
     <meta property="og:url" content="https://xpensivefilms.vercel.app/" />
-    <meta property="og:image" content="/share-image.webp" />
-    <meta property="og:image:alt" content="About Xpensive Films" />
-    <!-- Structured data (JSON-LD) -->
+    <meta property="og:title" content="Xpensive Films | Premier Video Editing & Digital Marketing" />
+    <meta property="og:description" content="Xpensive by Quality, Not by Money. High-impact video production, digital marketing campaigns, and custom web development." />
+    <meta property="og:image" content="https://xpensivefilms.vercel.app/share-image.webp" />
+    <meta property="og:image:alt" content="Xpensive Films Share Banner" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://xpensivefilms.vercel.app/" />
+    <meta name="twitter:title" content="Xpensive Films | Premier Video Editing & Digital Marketing" />
+    <meta name="twitter:description" content="Xpensive by Quality, Not by Money. Professional video editing, corporate events, and digital marketing." />
+    <meta name="twitter:image" content="https://xpensivefilms.vercel.app/share-image.webp" />
+
+    <!-- Schema.org Structured Data (JSON-LD) for Search Engines -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Xpensive Films",
-      "url": "https://xpensivefilms.vercel.app/",
-      "logo": "https://xpensivefilms.vercel.app/xfilms-logo.webp",
-      "sameAs": [
-        "https://www.instagram.com/_x.films",
-        "https://www.linkedin.com/"
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://xpensivefilms.vercel.app/#organization",
+          "name": "Xpensive Films",
+          "url": "https://xpensivefilms.vercel.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://xpensivefilms.vercel.app/xfilms-logo.webp"
+          },
+          "slogan": "Xpensive by Quality, Not by Money.",
+          "description": "Premier digital marketing agency specializing in high-impact video editing, corporate media, social media growth, and custom website development.",
+          "sameAs": [
+            "https://www.instagram.com/_x.films"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://xpensivefilms.vercel.app/#website",
+          "url": "https://xpensivefilms.vercel.app/",
+          "name": "Xpensive Films",
+          "publisher": {
+            "@id": "https://xpensivefilms.vercel.app/#organization"
+          }
+        },
+        {
+          "@type": "ProfessionalService",
+          "@id": "https://xpensivefilms.vercel.app/#service",
+          "name": "Xpensive Films",
+          "url": "https://xpensivefilms.vercel.app/",
+          "priceRange": "$$",
+          "image": "https://xpensivefilms.vercel.app/xfilms-logo.webp",
+          "serviceType": [
+            "Video Editing",
+            "Digital Marketing",
+            "Website Development",
+            "Corporate Event Videography",
+            "Real Estate Videography",
+            "Podcast Production"
+          ]
+        }
       ]
     }
     </script>
-    <title>Xpensive Films</title>
   </head>
   <body>
     <div id="root"></div>

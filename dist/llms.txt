@@ -1,0 +1,37 @@
+# Xpensive Films
+
+> Xpensive by Quality, Not by Money.
+
+Xpensive Films is a premier digital marketing, high-impact video editing, social media growth, and custom website development agency. We craft memorable brand identities through cinematic storytelling, seamless video edits, and modern web creations.
+
+## Core Agency Services
+- **Website Development**: Custom, responsive web applications built with modern frontend frameworks, glassmorphism UI, fast load speeds, and SEO optimization.
+- **Corporate Events**: Professional event planning, videography, and recap production for conferences, product launches, and corporate functions.
+- **Bars & Restaurants**: High-resolution food, beverage, and venue media production designed to boost customer conversion and foot traffic.
+- **Real Estate**: Architectural and property showcase videography focusing on lighting, room layout, and listing engagement.
+- **Testimonials**: Authentic client testimonial filming and polished video editing.
+- **Digital Marketing**: Data-driven marketing strategies, social media campaigns, SEO, and paid advertising.
+- **Social Media Management**: Strategic content creation, scheduling, audience engagement, and brand identity growth.
+- **Influencer Marketing**: Brand collaborations and campaign management with relevant influencers.
+- **Podcast Production**: Professional audio recording, video podcast editing, and multi-channel publishing.
+
+## Portfolio & Showcase Categories
+- **Events & Weddings**
+- **Car Delivery & Automotive**
+- **Logo Reveal & Animations**
+- **Podcasts**
+- **Real Estate Showcase**
+- **Commercial & Ad Campaigns**
+- **School & Institution Media**
+- **Concerts & Live Events**
+
+## Contact & Links
+- Website: https://xpensivefilms.vercel.app/
+- Contact Form: https://xpensivefilms.vercel.app/#Contact
+- Instagram: https://www.instagram.com/_x.films
+- Inquiry Email: xpensivefilms.co@gmail.com
+
+## Technical Stack
+- Frontend: React, Vite, TailwindCSS, Shadcn UI, Lucide Icons, AOS Animations
+- Database & Storage: Supabase PostgreSQL, Supabase Auth, Supabase Storage
+- Infrastructure: Vercel CDN

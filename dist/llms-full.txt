@@ -1,0 +1,65 @@
+# Xpensive Films - Comprehensive LLM Knowledge Base
+
+## Brand Tagline
+Xpensive by Quality, Not by Money.
+
+## About Xpensive Films
+Xpensive Films is an end-to-end creative agency specializing in video production, digital marketing, and web development. Our team produces visual content that captivates audiences, drives brand awareness, and converts prospects into clients.
+
+### Mission Statement
+To deliver agency-grade video edits and digital solutions with unmatched quality, transparent collaboration, and measurable business growth for our clients worldwide.
+
+---
+
+## Detailed Service Catalog
+
+### 1. Website Development
+We build custom responsive websites with high-performance code, sleek glassmorphism UI, fast loading times, and full SEO optimization.
+- Technologies: React, JavaScript, Vite, Tailwind CSS, Shadcn UI, Supabase backend.
+- Best for: Companies, startups, personal portfolios, local businesses seeking a digital presence.
+
+### 2. Corporate Events Videography & Editing
+Full event planning, coverage, and recap edits for corporate functions, conferences, keynotes, and product launches.
+
+### 3. Bars & Restaurants Media
+Professional photo and video shoots showcasing signature food items, drinks, interior ambiance, and special events.
+
+### 4. Real Estate Media
+High-definition property walkthroughs, drone footage, and social media reels highlighting architecture, lighting, and interior aesthetics.
+
+### 5. Testimonial Video Production
+Authentic, scripted or unscripted client interview shoots that build immediate trust with target audiences.
+
+### 6. Digital Marketing & SEO
+Data-backed marketing strategies including search engine optimization (SEO), pay-per-click (PPC) campaigns, and audience funneling.
+
+### 7. Social Media Management
+End-to-end management of Instagram, TikTok, YouTube Shorts, and LinkedIn platforms including content calendars, caption writing, hashtag strategy, and analytics tracking.
+
+### 8. Influencer Marketing
+Matching brands with targeted creators and influencers for sponsored content, product unboxings, and campaign execution.
+
+### 9. Podcast Production
+Turnkey podcast editing including multi-camera video switching, audio noise removal, color grading, thumbnail creation, and clip extraction for social media reels.
+
+---
+
+## Portfolio Video Categories
+1. Events & Weddings
+2. Car Delivery & Automotive Reels
+3. Logo Reveal & Motion Graphics
+4. Audio/Video Podcasts
+5. Real Estate Listings
+6. Commercial Advertisements
+7. School & Institution Highlights
+8. Concerts & Music Festivals
+
+---
+
+## Technical & Infrastructure Overview
+- Website: https://xpensivefilms.vercel.app/
+- Database & Authentication: Supabase
+- Video & File Storage: Supabase Storage Buckets (`portfolio-videos`, `services-images`, `web-projects`)
+- Hosting: Vercel CDN
+- Support Email: xpensivefilms.co@gmail.com
+- Social Handles: Instagram (@_x.films)

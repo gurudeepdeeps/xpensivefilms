@@ -1,3 +1,29 @@
+# Standard Search Engine Crawlers
 User-agent: *
 Allow: /
+Disallow: /admin
+
+# AI Agents & LLM Crawlers (OpenAI GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+# Sitemap & LLM Documentation
 Sitemap: https://xpensivefilms.vercel.app/sitemap.xml
