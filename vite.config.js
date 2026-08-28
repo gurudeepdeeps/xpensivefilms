@@ -74,6 +74,10 @@ function localApiPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), localApiPlugin()],
+  server: {
+    host: true, // Exposes Network URL (e.g. http://192.168.1.X:5173) for mobile testing
+    port: 5173,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

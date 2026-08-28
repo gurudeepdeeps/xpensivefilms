@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
@@ -14,8 +14,10 @@ import {
   Code2,
   Monitor
 } from 'lucide-react';
-import DeveloperSetup3DCanvas from '../components/DeveloperSetup3DCanvas';
 import Swal from 'sweetalert2';
+
+// React Lazy Load 3D WebGL Canvas so Three.js & textures are NOT downloaded on mobile page load
+const DeveloperSetup3DCanvas = lazy(() => import('../components/DeveloperSetup3DCanvas'));
 
 const Maintenance = () => {
   // Target date: September 6, 2026 00:00:00
@@ -38,6 +40,18 @@ const Maintenance = () => {
   };
 
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  // Detect Desktop Viewport for Inline 3D Scene
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Modal States
   const [showDevModal, setShowDevModal] = useState(false);
@@ -142,42 +156,42 @@ const Maintenance = () => {
       </div>
 
       {/* Top Navbar Header */}
-      <header className="relative z-10 container mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-row items-center justify-between gap-3">
         {/* Logo & Brand Name - Matching Navbar styling */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <img 
             src="/xfilms-logo.webp" 
             alt="Xpensive Films Logo" 
-            className="h-9 w-auto object-contain transition-transform duration-300 hover:scale-105" 
+            className="h-7 sm:h-9 w-auto object-contain transition-transform duration-300 hover:scale-105" 
           />
-          <span className="text-xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent">
+          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent tracking-tight">
             Xpensive Films
           </span>
         </div>
 
         {/* Live Status Badge */}
-        <div className="flex items-center gap-3 bg-[#13141f]/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-inner">
-          <span className="relative flex h-2.5 w-2.5">
+        <div className="flex items-center gap-2 bg-[#13141f]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-inner shrink-0">
+          <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+            <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-amber-500" />
           </span>
-          <span className="text-xs font-semibold text-amber-300 font-mono tracking-wide uppercase">
+          <span className="text-[10px] sm:text-xs font-semibold text-amber-300 font-mono tracking-wide uppercase">
             Maintenance Until Sept 6
           </span>
         </div>
       </header>
 
       {/* Main Hero Section */}
-      <main className="relative z-10 container mx-auto px-6 py-8 flex flex-col lg:flex-row items-center justify-between gap-12 my-auto">
+      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 my-auto">
         
         {/* Left Column: Text & Countdown & Actions */}
-        <div className="w-full lg:w-1/2 flex flex-col items-start space-y-8 text-left">
+        <div className="w-full lg:w-1/2 flex flex-col items-start space-y-6 sm:space-y-8 text-left">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono font-medium"
+            className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] sm:text-xs font-mono font-medium"
           >
             <Code2 className="w-3.5 h-3.5 text-purple-400" />
             <span>DEVELOPERS AT WORK</span>
@@ -187,15 +201,15 @@ const Maintenance = () => {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-4"
+            className="space-y-3 sm:space-y-4"
           >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight sm:leading-tight">
               We are upgrading our <br />
               <span className="bg-gradient-to-r from-[#a855f7] via-indigo-400 to-amber-400 bg-clip-text text-transparent">
                 Digital Cinema Experience
               </span>
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg leading-relaxed max-w-xl">
+            <p className="text-gray-400 text-sm sm:text-lg leading-relaxed max-w-xl">
               Our studio site is currently undergoing scheduled infrastructure upgrades and storage optimization. We will be back online live on <strong className="text-white">September 6, 2026</strong>.
             </p>
           </motion.div>
@@ -205,55 +219,55 @@ const Maintenance = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full max-w-lg bg-[#11121c]/90 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-2xl shadow-black/50"
+            className="w-full max-w-lg bg-[#11121c]/90 border border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-xl shadow-2xl shadow-black/50"
           >
-            <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
-              <span className="text-xs font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <Clock className="w-4 h-4 text-purple-400" /> Back Online On Sept 6
+            <div className="flex items-center justify-between mb-3 sm:mb-4 border-b border-white/10 pb-2.5 sm:pb-3">
+              <span className="text-[11px] sm:text-xs font-mono text-gray-400 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
+                <Clock className="w-3.5 h-3.5 text-purple-400" /> Back Online On Sept 6
               </span>
-              <span className="text-xs text-emerald-400 font-mono flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" /> Systems Operational
+              <span className="text-[10px] sm:text-xs text-emerald-400 font-mono flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Systems Operational
               </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 text-center">
-              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-3">
-                <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-white">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-2 sm:p-3">
+                <span className="block text-xl sm:text-3xl font-extrabold font-mono text-white">
                   {String(timeLeft.days).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Days</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase tracking-wider">Days</span>
               </div>
-              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-3">
-                <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-purple-400">
+              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-2 sm:p-3">
+                <span className="block text-xl sm:text-3xl font-extrabold font-mono text-purple-400">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Hours</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase tracking-wider">Hours</span>
               </div>
-              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-3">
-                <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-indigo-400">
+              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-2 sm:p-3">
+                <span className="block text-xl sm:text-3xl font-extrabold font-mono text-indigo-400">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Mins</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase tracking-wider">Mins</span>
               </div>
-              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-3">
-                <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-amber-400">
+              <div className="bg-[#0b0c13] border border-white/5 rounded-xl p-2 sm:p-3">
+                <span className="block text-xl sm:text-3xl font-extrabold font-mono text-amber-400">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Secs</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500 font-mono uppercase tracking-wider">Secs</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Full-width stacked on mobile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap items-center gap-4 w-full"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-lg"
           >
             <button
               onClick={() => setShowDevModal(true)}
-              className="group relative inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#a855f7] to-[#6366f1] hover:from-[#9333ea] hover:to-[#4f46e5] text-white font-semibold text-sm shadow-xl shadow-purple-600/25 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+              className="group relative inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#a855f7] to-[#6366f1] hover:from-[#9333ea] hover:to-[#4f46e5] text-white font-semibold text-sm shadow-xl shadow-purple-600/25 transition-all duration-300 transform active:scale-98"
             >
               <Terminal className="w-4 h-4 text-white" />
               <span>Fullscreen Developer View</span>
@@ -262,7 +276,7 @@ const Maintenance = () => {
 
             <button
               onClick={() => setShowNotifyModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-[#171825] hover:bg-[#1f2133] border border-white/10 text-gray-200 font-medium text-sm transition-all duration-300"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-[#171825] hover:bg-[#1f2133] border border-white/10 text-gray-200 font-medium text-sm transition-all duration-300 active:scale-98"
             >
               <Bell className="w-4 h-4 text-amber-400" />
               <span>Notify Me</span>
@@ -270,31 +284,37 @@ const Maintenance = () => {
           </motion.div>
         </div>
 
-        {/* Right Column: 3D Developer Coding Workstation */}
-        <div className="w-full lg:w-1/2 h-[380px] sm:h-[480px] relative flex items-center justify-center">
-          
-          {/* Glassmorphic Container */}
-          <div className="w-full h-full bg-gradient-to-b from-[#151624]/60 to-[#0b0c14]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 relative overflow-hidden shadow-2xl">
-            
-            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-[#0a0b12]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[11px] font-mono text-gray-300">
-              <Monitor className="w-3.5 h-3.5 text-purple-400" />
-              <span>Developer Workstation (3D WebGL)</span>
-            </div>
+        {/* Right Column: 3D Developer Coding Workstation (Desktop Only - LAZY LOADED) */}
+        {isDesktop && (
+          <div className="w-full lg:w-1/2 h-[480px] relative flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-b from-[#151624]/60 to-[#0b0c14]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 relative overflow-hidden shadow-2xl">
+              
+              <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-[#0a0b12]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg text-[11px] font-mono text-gray-300">
+                <Monitor className="w-3.5 h-3.5 text-purple-400" />
+                <span>Developer Workstation (3D WebGL)</span>
+              </div>
 
-            {/* 3D Developer Setup WebGL Canvas */}
-            <DeveloperSetup3DCanvas isModal={false} themeMode={devTheme} />
+              {/* Suspense Lazy Load 3D WebGL Canvas */}
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center text-xs font-mono text-purple-400 animate-pulse">
+                  Loading 3D Canvas...
+                </div>
+              }>
+                <DeveloperSetup3DCanvas isModal={false} themeMode={devTheme} />
+              </Suspense>
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* Footer Section */}
-      <footer className="relative z-10 container mx-auto px-6 py-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+      <footer className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-gray-500 text-center sm:text-left">
         <div>
           © 2026 <span className="text-gray-300 font-semibold">Xpensive Films</span>. All rights reserved.
         </div>
 
         {/* Emergency Contact & Social Links */}
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           <a
             href="https://wa.me/916363770057?text=Hi%20Xpensive%20Films%20Team"
             target="_blank"
@@ -315,11 +335,11 @@ const Maintenance = () => {
       </footer>
 
       {/* ========================================================================= */}
-      {/* FULLSCREEN 3D DEVELOPER CODING WORKSPACE MODAL */}
+      {/* FULLSCREEN 3D DEVELOPER CODING WORKSPACE MODAL (LAZY LOADED ON CLICK) */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {showDevModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             
             {/* Backdrop */}
             <motion.div
@@ -336,95 +356,101 @@ const Maintenance = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-4xl bg-[#0e0f1a] border border-white/15 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col md:flex-row"
+              className="relative w-full max-w-4xl bg-[#0e0f1a] border border-white/15 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col md:flex-row my-auto max-h-[92vh]"
             >
               {/* Close Button */}
               <button
                 onClick={() => setShowDevModal(false)}
-                className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                className="absolute top-3 right-3 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Interactive 3D Canvas Area */}
-              <div className="w-full md:w-3/5 h-[360px] md:h-[500px] bg-[#07080f] relative flex items-center justify-center overflow-hidden">
+              <div className="w-full md:w-3/5 h-[280px] sm:h-[360px] md:h-[500px] bg-[#07080f] relative flex items-center justify-center overflow-hidden shrink-0">
                 
                 {/* 3D Drag Orbit Hint */}
-                <div className="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-mono text-gray-300 flex items-center gap-1.5">
-                  <Monitor className="w-3.5 h-3.5 text-purple-400" />
-                  <span>🖱️ Drag to Orbit 3D Developer Desk 360°</span>
+                <div className="absolute top-3 left-3 z-20 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 text-[9px] sm:text-[10px] font-mono text-gray-300 flex items-center gap-1.5">
+                  <Monitor className="w-3 h-3 text-purple-400" />
+                  <span>🖱️ Drag to Orbit 3D Desk 360°</span>
                 </div>
 
-                {/* 3D Developer Setup WebGL */}
-                <DeveloperSetup3DCanvas isModal={true} themeMode={devTheme} />
+                {/* Lazy Loaded 3D WebGL Canvas Modal */}
+                <Suspense fallback={
+                  <div className="text-xs font-mono text-purple-400 animate-pulse">
+                    Initializing 3D WebGL Workstation...
+                  </div>
+                }>
+                  <DeveloperSetup3DCanvas isModal={true} themeMode={devTheme} />
+                </Suspense>
               </div>
 
               {/* Developer Diagnostics & IDE Controls Panel */}
-              <div className="w-full md:w-2/5 p-6 bg-[#131422] flex flex-col justify-between border-t md:border-t-0 md:border-l border-white/10 space-y-6">
-                <div className="space-y-4">
+              <div className="w-full md:w-2/5 p-5 sm:p-6 bg-[#131422] flex flex-col justify-between border-t md:border-t-0 md:border-l border-white/10 space-y-4 sm:space-y-6 overflow-y-auto">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-2">
                     <Terminal className="w-5 h-5 text-purple-400" />
-                    <h3 className="text-xl font-bold text-white">Developer Workspace</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-white">Developer Workspace</h3>
                   </div>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    Interactive 3D representation of our lead developer optimizing code, syncing databases, and preparing full live return on September 6, 2026.
+                    Interactive 3D representation of our lead developer optimizing code and preparing full live return on September 6, 2026.
                   </p>
 
                   {/* Environment Lighting Switcher */}
                   <div className="space-y-2">
-                    <label className="text-[11px] font-mono text-gray-400 uppercase tracking-wider block">
+                    <label className="text-[10px] sm:text-[11px] font-mono text-gray-400 uppercase tracking-wider block">
                       Environment Setup Theme
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
                         onClick={() => setDevTheme('cyber')}
-                        className={`py-2 px-2.5 rounded-xl border text-xs font-medium font-mono transition-all ${
+                        className={`py-1.5 sm:py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-medium font-mono transition-all ${
                           devTheme === 'cyber'
                             ? 'bg-purple-500/20 border-purple-500 text-purple-300'
                             : 'bg-[#090a10] border-white/10 text-gray-400 hover:text-white'
                         }`}
                       >
-                        Cyber Neon
+                        Cyber
                       </button>
                       <button
                         onClick={() => setDevTheme('matrix')}
-                        className={`py-2 px-2.5 rounded-xl border text-xs font-medium font-mono transition-all ${
+                        className={`py-1.5 sm:py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-medium font-mono transition-all ${
                           devTheme === 'matrix'
                             ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
                             : 'bg-[#090a10] border-white/10 text-gray-400 hover:text-white'
                         }`}
                       >
-                        Matrix Rain
+                        Matrix
                       </button>
                       <button
                         onClick={() => setDevTheme('rgb')}
-                        className={`py-2 px-2.5 rounded-xl border text-xs font-medium font-mono transition-all ${
+                        className={`py-1.5 sm:py-2 px-2 rounded-xl border text-[11px] sm:text-xs font-medium font-mono transition-all ${
                           devTheme === 'rgb'
                             ? 'bg-pink-500/20 border-pink-500 text-pink-400'
                             : 'bg-[#090a10] border-white/10 text-gray-400 hover:text-white'
                         }`}
                       >
-                        RGB Midnight
+                        RGB
                       </button>
                     </div>
                   </div>
 
                   {/* Real-time Code IDE Build Metrics */}
-                  <div className="space-y-2.5 bg-[#0a0b12] p-4 rounded-2xl border border-white/5 font-mono text-xs">
+                  <div className="space-y-2 bg-[#0a0b12] p-3 sm:p-4 rounded-2xl border border-white/5 font-mono text-[11px] sm:text-xs">
                     <div className="flex justify-between items-center text-gray-400">
-                      <span>Scheduled Launch:</span>
+                      <span>Launch Date:</span>
                       <span className="text-emerald-400 font-bold">Sept 6, 2026</span>
                     </div>
                     <div className="flex justify-between items-center text-gray-400">
-                      <span>Direct Contact:</span>
+                      <span>WhatsApp:</span>
                       <a href="https://wa.me/916363770057" target="_blank" rel="noreferrer" className="text-emerald-400 font-bold hover:underline">
                         +91 6363770057
                       </a>
                     </div>
                     <div className="flex justify-between items-center text-gray-400">
-                      <span>Support Email:</span>
-                      <a href="mailto:xpensivefilms.co@gmail.com" className="text-purple-400 font-bold hover:underline">
-                        xpensivefilms.co@gmail.com
+                      <span>Email:</span>
+                      <a href="mailto:xpensivefilms.co@gmail.com" className="text-purple-400 font-bold hover:underline truncate max-w-[140px]">
+                        xpensivefilms.co...
                       </a>
                     </div>
                   </div>
@@ -432,7 +458,7 @@ const Maintenance = () => {
 
                 <button
                   onClick={() => setShowDevModal(false)}
-                  className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-purple-600/20"
+                  className="w-full py-2.5 sm:py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-purple-600/20"
                 >
                   Close Developer View
                 </button>
@@ -460,7 +486,7 @@ const Maintenance = () => {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-md bg-[#121322] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 space-y-5"
+              className="relative w-full max-w-md bg-[#121322] border border-white/15 rounded-3xl p-5 sm:p-8 shadow-2xl z-10 space-y-4 sm:space-y-5"
             >
               <button
                 onClick={() => setShowNotifyModal(false)}
@@ -469,11 +495,11 @@ const Maintenance = () => {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Bell className="w-5 h-5" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Get Instant Notification</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white">Get Instant Notification</h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   Enter your email address to receive an automated notification when our site goes live on September 6.
                 </p>

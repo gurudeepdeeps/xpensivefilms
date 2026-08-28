@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation, Link } from "react-router-dom";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
 import "./index.css";
 import Home from "./Pages/Home";
@@ -16,6 +17,7 @@ import NotFound from "./Pages/NotFound";
 import AdminDashboard from "./Pages/Admin";
 import Maintenance from "./Pages/Maintenance";
 import CookieConsent from "./components/CookieConsent";
+import LoadingScreen from "./components/LoadingScreen";
 
 // Maintenance mode active automatically until Sept 6, 2026
 const MAINTENANCE_END_DATE = new Date('2026-09-06T23:59:59');
@@ -77,7 +79,14 @@ const LandingPage = () => {
 };
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
+    // Smooth initial loading screen timeout
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -98,12 +107,27 @@ function App() {
     requestAnimationFrame(raf);
 
     return () => {
+      clearTimeout(timer);
       lenis.destroy();
     };
   }, []);
 
   return (
     <>
+      <AnimatePresence mode="wait">
+        {isLoading && (
+          <motion.div
+            key="loading-screen"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed inset-0 z-50 pointer-events-none"
+          >
+            <LoadingScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Routes>
         <Route path="/" element={IS_MAINTENANCE_MODE ? <Maintenance /> : <LandingPage />} />
         <Route path="/maintenance" element={<Maintenance />} />
