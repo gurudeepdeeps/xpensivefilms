@@ -85,8 +85,8 @@ function App() {
       gestureDirection: 'vertical',
       smooth: true,
       mouseMultiplier: 1,
-      smoothTouch: true,
-      touchMultiplier: 2,
+      smoothTouch: false, // Allows native mobile touch scrolling
+      touchMultiplier: 1.5,
       infinite: false,
     });
 
