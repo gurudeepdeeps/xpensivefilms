@@ -1324,7 +1324,7 @@ const AdminDashboard = () => {
               <CardContent className="space-y-4">
                 <Alert variant="info">
                   <Mail className="w-5 h-5" />
-                  <AlertTitle>FormSubmit Active Endpoint</AlertTitle>
+                  <AlertTitle>Nodemailer SMTP Active Endpoint</AlertTitle>
                   <AlertDescription>
                     Client messages and brochure requests are forwarded directly to:{" "}
                     <strong className="text-white font-mono">xpensivefilms.co@gmail.com</strong>

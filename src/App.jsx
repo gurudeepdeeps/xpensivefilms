@@ -14,7 +14,12 @@ import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import Terms from "./Pages/Terms";
 import NotFound from "./Pages/NotFound";
 import AdminDashboard from "./Pages/Admin";
+import Maintenance from "./Pages/Maintenance";
 import CookieConsent from "./components/CookieConsent";
+
+// Maintenance mode active automatically until Sept 6, 2026
+const MAINTENANCE_END_DATE = new Date('2026-09-06T23:59:59');
+const IS_MAINTENANCE_MODE = new Date() < MAINTENANCE_END_DATE;
 
 const Footer = () => (
   <footer>
@@ -100,13 +105,14 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={IS_MAINTENANCE_MODE ? <Maintenance /> : <LandingPage />} />
+        <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/services" element={<Services />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={IS_MAINTENANCE_MODE ? <Maintenance /> : <NotFound />} />
       </Routes>
       <CookieConsent />
     </>

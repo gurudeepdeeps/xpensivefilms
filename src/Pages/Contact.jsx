@@ -8,6 +8,7 @@ import "aos/dist/aos.css";
 import ResumePDF from '../assets/XpensiveMedia-Brochure.pdf';
 
 const ContactPage = () => {
+  const formRef = useRef();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,7 +36,7 @@ const ContactPage = () => {
 
     Swal.fire({
       title: 'Sending Message...',
-      html: 'Please wait while we send your message',
+      html: 'Connecting to Xpensive Films Direct Nodemailer SMTP Server...',
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -43,20 +44,34 @@ const ContactPage = () => {
     });
 
     try {
-      // Get form data
-      const form = e.target;
-      const formData = new FormData(form);
+      // Call Direct Nodemailer Serverless API Endpoint (/api/contact)
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          type: "portfolio_contact"
+        }),
+      });
 
-      // Submit form
-      await form.submit();
+      let resData = {};
+      try { resData = await res.json(); } catch(e) {}
+
+      if (!res.ok || (resData.success === false)) {
+        throw new Error(resData.message || "SMTP handler error while attempting to send email.");
+      }
 
       // Show success message
       Swal.fire({
-        title: 'Success!',
-        text: 'Your message has been sent successfully!',
+        title: 'Message Sent Successfully!',
+        text: 'Your inquiry has been delivered via Nodemailer SMTP to xpensivefilms.co@gmail.com. We will get back to you shortly!',
         icon: 'success',
         confirmButtonColor: '#6366f1',
-        timer: 2000,
+        timer: 3500,
         timerProgressBar: true
       });
 
@@ -67,10 +82,11 @@ const ContactPage = () => {
         message: "",
       });
     } catch (error) {
+      console.error("Direct Nodemailer SMTP Error:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Something went wrong. Please try again later.',
-        icon: 'error',
+        title: 'SMTP Delivery Note',
+        text: 'Your message could not be dispatched automatically. Please contact us directly at xpensivefilms.co@gmail.com or via WhatsApp (+91 6363770057).',
+        icon: 'warning',
         confirmButtonColor: '#6366f1'
       });
     } finally {
@@ -104,13 +120,13 @@ const ContactPage = () => {
           data-aos-duration="1100"
           className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
         >
-          Got a question? Send us a message, and w'll get back to you soon.
+          Got a question or video project? Send us a message, and we will get back to you soon.
         </p>
 
         <div className="mt-4">
           <a href={ResumePDF} download="XpensiveFilms-Brochure.pdf" className="inline-block">
             <button className="sm:px-6 py-2 rounded-lg border border-[#a855f7]/50 text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
-              <FileText className="w-10 h-4 sm:w-5 sm:h-5" /> Download CV
+              <FileText className="w-10 h-4 sm:w-5 sm:h-5" /> Download Brochure
             </button>
           </a>
         </div>
@@ -140,15 +156,10 @@ const ContactPage = () => {
             </div>
 
             <form 
-              action="https://formsubmit.co/xpensivefilms.co@gmail.com "
-              method="POST"
+              ref={formRef}
               onSubmit={handleSubmit}
               className="space-y-6"
             >
-              {/* FormSubmit Configuration */}
-              <input type="hidden" name="_template" value="table" />
-              <input type="hidden" name="_captcha" value="false" />
-
               <div
                 data-aos="fade-up"
                 data-aos-delay="100"
@@ -199,25 +210,21 @@ const ContactPage = () => {
                   required
                 />
               </div>
+
               <button
-                data-aos="fade-up"
-                data-aos-delay="400"
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-purple-600/30 disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                <span>{isSubmitting ? "Sending via Nodemailer SMTP..." : "Send Message"}</span>
               </button>
             </form>
-
-            <div className="mt-10 pt-6 border-t border-white/10 flex justify-center space-x-6">
-              <SocialLinks />
-            </div>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-3 py-3 md:p-10 md:py-8 shadow-2xl transform transition-all duration-300 hover:shadow-[#6366f1]/10">
-            <LazyComments />
+          <div className="space-y-6">
+            <SocialLinks />
+            <Komentar />
           </div>
         </div>
       </div>
@@ -226,25 +233,3 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
-
-function LazyComments() {
-  const [visible, setVisible] = useState(false);
-  const hostRef = useRef(null);
-  useEffect(() => {
-    const el = hostRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver((entries) => {
-      if (entries.some(e => e.isIntersecting)) {
-        setVisible(true);
-        obs.disconnect();
-      }
-    }, { root: null, threshold: 0.25 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return (
-    <div ref={hostRef}>
-      {visible ? <Komentar /> : null}
-    </div>
-  );
-}
