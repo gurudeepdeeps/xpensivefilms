@@ -1,5 +1,5 @@
 import React, { memo, useState } from "react";
-import { getSupabaseImageUrl } from "../utils/supabaseImages";
+import { getCloudflareImageUrl } from "../utils/cloudflareMedia";
 import SEO from "../components/SEO";
 import {
   Carousel,

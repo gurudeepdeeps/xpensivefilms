@@ -1,10 +1,5 @@
 import nodemailer from 'nodemailer';
-import { createClient } from '@supabase/supabase-js';
-
-// Optional Supabase client to store subscribers if Supabase credentials are available
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://rrwbwviwesnczadgjhde.supabase.co";
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "sb_publishable_JcEPZ33wrf_WHa_U75L7Dw_AosVNuio";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { executeD1 } from './_d1.js';
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -44,16 +39,18 @@ export default async function handler(req, res) {
       },
     });
 
-    const isNotificationRequest = type === 'maintenance_notify';
+    const isNotificationRequest = type === 'maintenance_notify' || type === 'subscriber';
     const clientName = name || (isNotificationRequest ? 'Subscriber' : 'Anonymous Client');
 
-    // 1. Store Subscriber in Supabase (if subscribers table exists)
-    if (isNotificationRequest) {
-      try {
-        await supabase.from('subscribers').insert([{ email, created_at: new Date().toISOString() }]);
-      } catch (dbErr) {
-        console.warn("Supabase subscriber logging note:", dbErr.message);
-      }
+    // 1. Store Subscriber/Inquiry in Cloudflare D1
+    try {
+      const id = 'inq_' + Math.random().toString(36).substring(2, 9);
+      await executeD1(
+        'INSERT INTO contact_inquiries (id, name, email, message, type, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, clientName, email.trim(), message || '', type || 'inquiry', new Date().toISOString()]
+      );
+    } catch (dbErr) {
+      console.warn("Cloudflare D1 inquiry logging note:", dbErr.message);
     }
 
     // 2. Email Notification Sent to Admin (xpensivefilms.co@gmail.com)
@@ -64,66 +61,20 @@ export default async function handler(req, res) {
           <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 40px 10px;">
             <tr>
               <td align="center">
-                <table width="100%" max-width="600" style="max-width: 600px; background-color: #10121d; border: 1px solid #25283c; border-radius: 20px; padding: 30px;">
-                  <tr>
-                    <td>
-                      <h1 style="color: #a78bfa; margin-top: 0;">XPENSIVE FILMS</h1>
-                      <p style="font-size: 12px; color: #fbbf24; text-transform: uppercase; letter-spacing: 2px;">
-                        ${isNotificationRequest ? '🔔 NEW BACK-ONLINE SUBSCRIBER' : '🎬 NEW PORTFOLIO CLIENT INQUIRY'}
-                      </p>
-                      <hr style="border: 0; border-top: 1px solid #25283c; margin: 20px 0;" />
-                      <p><strong>From:</strong> ${clientName}</p>
-                      <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #a78bfa;">${email}</a></p>
-                      <p><strong>Message / Context:</strong></p>
-                      <div style="background-color: #0b0c14; border-left: 4px solid #8b5cf6; padding: 15px; border-radius: 8px; color: #e2e8f0;">
-                        ${message || `Subscriber ${email} signed up to be notified when site maintenance completes on Sept 6.`}
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>
-    `;
-
-    await transporter.sendMail({
-      from: `"Xpensive Films System" <${smtpUser}>`,
-      to: 'xpensivefilms.co@gmail.com',
-      replyTo: email,
-      subject: isNotificationRequest
-        ? `🔔 Back-Online Subscriber Registered: ${email}`
-        : `🎬 New Portfolio Message from ${clientName}`,
-      html: adminHtmlContent,
-    });
-
-    // 3. Email Sent Directly to Subscribed Visitor Confirming Sept 6 Launch
-    const visitorHtmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <body style="margin: 0; padding: 0; background-color: #07080d; font-family: sans-serif; color: #ffffff;">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 40px 10px;">
-            <tr>
-              <td align="center">
                 <table width="100%" max-width="580" style="max-width: 580px; background-color: #10121d; border: 1px solid #25283c; border-radius: 20px; padding: 32px; text-align: left;">
                   <tr>
                     <td>
-                      <h2 style="color: #a78bfa; margin-top: 0;">🎬 You're Subscribed to Xpensive Films!</h2>
-                      <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">
-                        Thank you for subscribing! Our studio site is currently undergoing scheduled infrastructure upgrades.
-                      </p>
-                      <div style="background-color: #161828; border: 1px solid #313552; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
-                        <span style="font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block;">Official Launch Date</span>
-                        <span style="font-size: 22px; font-weight: 800; color: #fbbf24;">September 6, 2026</span>
+                      <div style="display: inline-block; padding: 6px 12px; background-color: #1e1b4b; border: 1px solid #4338ca; border-radius: 8px; color: #818cf8; font-size: 12px; font-weight: bold; margin-bottom: 20px;">
+                        ${isNotificationRequest ? '🔔 NEW LAUNCH SUBSCRIBER' : '🎬 DIRECT CLIENT INQUIRY'}
                       </div>
-                      <p style="color: #cbd5e1; font-size: 14px;">
-                        We will send you an email alert the moment our platform goes live with upgraded 4K video reels and new digital creations.
-                      </p>
-                      <hr style="border: 0; border-top: 1px solid #25283c; margin: 24px 0;" />
-                      <p style="font-size: 12px; color: #64748b;">
-                        For urgent inquiries, email us at <a href="mailto:xpensivefilms.co@gmail.com" style="color: #a78bfa;">xpensivefilms.co@gmail.com</a> or WhatsApp <a href="https://wa.me/916363770057" style="color: #34d399;">+91 6363770057</a>.
-                      </p>
+                      <h2 style="color: #ffffff; margin-top: 0; font-size: 22px;">
+                        ${isNotificationRequest ? 'Launch Alert Registered' : `Inquiry from ${clientName}`}
+                      </h2>
+                      <div style="background-color: #161828; border: 1px solid #25283c; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 13px;"><strong>Name:</strong> <span style="color: #ffffff;">${clientName}</span></p>
+                        <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 13px;"><strong>Email:</strong> <span style="color: #38bdf8;">${email}</span></p>
+                        ${message ? `<p style="margin: 10px 0 0 0; color: #94a3b8; font-size: 13px;"><strong>Message:</strong><br/><span style="color: #ffffff; white-space: pre-wrap;">${message}</span></p>` : ''}
+                      </div>
                     </td>
                   </tr>
                 </table>
@@ -134,23 +85,24 @@ export default async function handler(req, res) {
       </html>
     `;
 
-    try {
+    if (smtpPass) {
       await transporter.sendMail({
-        from: `"Xpensive Films Studio" <${smtpUser}>`,
-        to: email,
-        subject: `🎬 Subscription Confirmed - Xpensive Films Launches Sept 6`,
-        html: visitorHtmlContent,
+        from: `"Xpensive Films System" <${smtpUser}>`,
+        to: 'xpensivefilms.co@gmail.com',
+        replyTo: email,
+        subject: isNotificationRequest
+          ? `🔔 Back-Online Subscriber Registered: ${email}`
+          : `🎬 New Portfolio Message from ${clientName}`,
+        html: adminHtmlContent,
       });
-    } catch (visitorMailErr) {
-      console.warn("Visitor confirmation mail warning:", visitorMailErr);
     }
 
-    return res.status(200).json({ success: true, message: 'Subscriber email processed & confirmation delivered via Nodemailer SMTP' });
+    return res.status(200).json({ success: true, message: 'Message received and recorded successfully.' });
   } catch (err) {
     console.error("Nodemailer SMTP Handler Error:", err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Failed to send email via SMTP',
+      message: err.message || 'Failed to process contact submission',
     });
   }
 }

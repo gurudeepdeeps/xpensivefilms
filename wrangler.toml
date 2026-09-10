@@ -1,0 +1,13 @@
+name = "xpensive-films-portfolio"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "xpensive_films_db"
+database_name = "xpensive_films_db"
+database_id = "9e5fde94-6ad0-414f-ab69-0fc0452c28ce"
+
+# Cloudflare R2 Bucket Binding (for media/images)
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "xpensive-media-assets"

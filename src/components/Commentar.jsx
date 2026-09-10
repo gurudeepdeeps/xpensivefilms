@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import PropTypes from 'prop-types'; 
-import { supabase } from '../supabase'; 
+import { api } from '../services/api'; 
 import { UserCircle2, Loader2, AlertCircle, Send } from 'lucide-react'; 
 import { Alert, AlertTitle, AlertDescription } from './ui/alert';
 import AOS from "aos"; 
@@ -135,56 +135,28 @@ const Komentar = () => {
 
     const fetchComments = useCallback(async () => {
         try {
-            const { data, error } = await supabase
-                .from('comments')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error("Supabase fetch comments error:", error);
-            } else if (data) {
+            const data = await api.getComments();
+            if (data) {
                 setComments(data);
             }
         } catch (err) {
-            console.error(err);
+            console.error("Error fetching comments from Cloudflare API:", err);
         }
     }, []);
 
     useEffect(() => {
         fetchComments();
-
-        // Subscribe to realtime Supabase changes
-        const channel = supabase
-            .channel('public:comments')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, () => {
-                fetchComments();
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
     }, [fetchComments]);
 
     const handleSubmitComment = async ({ newComment, userName }) => {
         setIsSubmitting(true);
         setError(null);
         try {
-            const { error: insertError } = await supabase
-                .from('comments')
-                .insert([
-                    {
-                        content: newComment,
-                        userName: userName,
-                        created_at: new Date().toISOString(),
-                    }
-                ]);
-
-            if (insertError) {
-                console.error("Supabase insert error:", insertError);
-                setError("Failed to submit comment. Please try again.");
-            } else {
+            const result = await api.postComment(userName, newComment);
+            if (result.success) {
                 fetchComments();
+            } else {
+                setError(result.message || "Failed to submit comment. Please try again.");
             }
         } catch (e) {
             console.error("Error submitting comment:", e);

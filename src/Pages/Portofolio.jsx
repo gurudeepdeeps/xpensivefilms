@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Play, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { supabase } from '../supabase';
+import { api } from '../services/api';
 import WebsiteProjects from '../components/WebsiteProjects';
 import { Badge } from '../components/ui/badge';
 
@@ -26,20 +26,18 @@ export default function FullWidthTabs() {
   const [dbCategories, setDbCategories] = useState([]);
   const [dbVideos, setDbVideos] = useState([]);
 
-  // Fetch dynamic categories & videos from Supabase
+  // Fetch dynamic categories & videos from Cloudflare API
   useEffect(() => {
-    async function loadPortfolioFromSupabase() {
+    async function loadPortfolioFromCloudflare() {
       try {
-        const { data: catData } = await supabase.from('video_categories').select('*');
-        if (catData) setDbCategories(catData);
-
-        const { data: vidData } = await supabase.from('portfolio_videos').select('*');
-        if (vidData) setDbVideos(vidData);
+        const { categories: catData, videos: vidData } = await api.getPortfolio();
+        if (catData && catData.length > 0) setDbCategories(catData);
+        if (vidData && vidData.length > 0) setDbVideos(vidData);
       } catch (e) {
-        console.error("Supabase load portfolio failed:", e);
+        console.error("Cloudflare load portfolio failed:", e);
       }
     }
-    loadPortfolioFromSupabase();
+    loadPortfolioFromCloudflare();
   }, []);
 
   const categories = useMemo(() => {

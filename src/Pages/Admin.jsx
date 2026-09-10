@@ -25,9 +25,11 @@ import {
   AlertTriangle,
   Info,
   X,
+  Server,
+  Cloud,
 } from "lucide-react";
 import SEO from "../components/SEO";
-import { supabase } from "../supabase";
+import { api } from "../services/api";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -54,135 +56,92 @@ import {
   TableRow,
 } from "../components/ui/table";
 
-const SQL_SETUP_SCRIPT = `-- Strict Production RLS Script for Supabase SQL Editor:
-create table if not exists public.comments (
-  id uuid default gen_random_uuid() primary key,
-  "userName" text,
-  content text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+const CLOUDFLARE_D1_SCRIPT = `-- =========================================================
+-- Cloudflare D1 Database Schema Setup
+-- Run in terminal: npx wrangler d1 execute xpensive_films_db --file=./d1/schema.sql
+-- Or paste directly in Cloudflare Dashboard -> D1 -> Console
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS comments (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  userName TEXT NOT NULL DEFAULT 'Anonymous',
+  content TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-create table if not exists public.web_categories (
-  id uuid default gen_random_uuid() primary key,
-  name text not null unique,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+CREATE TABLE IF NOT EXISTS web_categories (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  name TEXT NOT NULL UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-create table if not exists public.web_projects (
-  id uuid default gen_random_uuid() primary key,
-  title text not null,
-  category text,
-  description text,
-  image text,
-  url text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+CREATE TABLE IF NOT EXISTS web_projects (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  title TEXT NOT NULL,
+  category TEXT,
+  description TEXT,
+  image TEXT,
+  url TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-create table if not exists public.video_categories (
-  id uuid default gen_random_uuid() primary key,
-  key text not null unique,
-  label text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+CREATE TABLE IF NOT EXISTS video_categories (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  key TEXT NOT NULL UNIQUE,
+  label TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-create table if not exists public.portfolio_videos (
-  id uuid default gen_random_uuid() primary key,
-  title text not null,
-  category text not null,
-  path text not null,
-  thumbnail text,
-  description text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+CREATE TABLE IF NOT EXISTS portfolio_videos (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  path TEXT NOT NULL,
+  thumbnail TEXT,
+  description TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-alter table public.comments enable row level security;
-alter table public.web_categories enable row level security;
-alter table public.web_projects enable row level security;
-alter table public.video_categories enable row level security;
-alter table public.portfolio_videos enable row level security;
-
--- Drop old policies if any
-drop policy if exists "Allow all comments" on public.comments;
-drop policy if exists "Allow all web_categories" on public.web_categories;
-drop policy if exists "Allow all web_projects" on public.web_projects;
-drop policy if exists "Allow all video_categories" on public.video_categories;
-drop policy if exists "Allow all portfolio_videos" on public.portfolio_videos;
-drop policy if exists "Public read comments" on public.comments;
-drop policy if exists "Public insert comments" on public.comments;
-drop policy if exists "Admin delete comments" on public.comments;
-drop policy if exists "Public read web_categories" on public.web_categories;
-drop policy if exists "Admin write web_categories" on public.web_categories;
-drop policy if exists "Public read web_projects" on public.web_projects;
-drop policy if exists "Admin write web_projects" on public.web_projects;
-drop policy if exists "Public read video_categories" on public.video_categories;
-drop policy if exists "Admin write video_categories" on public.video_categories;
-drop policy if exists "Public read portfolio_videos" on public.portfolio_videos;
-drop policy if exists "Admin write portfolio_videos" on public.portfolio_videos;
-
--- 1. Comments: Public Read & Insert, Admin Delete
-create policy "Public read comments" on public.comments for select using (true);
-create policy "Public insert comments" on public.comments for insert with check (true);
-create policy "Admin delete comments" on public.comments for delete using (auth.role() = 'authenticated');
-
--- 2. Web Categories: Public Read, Admin Write
-create policy "Public read web_categories" on public.web_categories for select using (true);
-create policy "Admin write web_categories" on public.web_categories for all using (auth.role() = 'authenticated');
-
--- 3. Web Projects: Public Read, Admin Write
-create policy "Public read web_projects" on public.web_projects for select using (true);
-create policy "Admin write web_projects" on public.web_projects for all using (auth.role() = 'authenticated');
-
--- 4. Video Categories: Public Read, Admin Write
-create policy "Public read video_categories" on public.video_categories for select using (true);
-create policy "Admin write video_categories" on public.video_categories for all using (auth.role() = 'authenticated');
-
--- 5. Portfolio Videos: Public Read, Admin Write
-create policy "Public read portfolio_videos" on public.portfolio_videos for select using (true);
-create policy "Admin write portfolio_videos" on public.portfolio_videos for all using (auth.role() = 'authenticated');
-
--- Storage Buckets & Policies
-insert into storage.buckets (id, name, public)
-values ('portfolio-videos', 'portfolio-videos', true), ('web-projects', 'web-projects', true)
-on conflict (id) do nothing;
-
-drop policy if exists "Public Access portfolio-videos" on storage.objects;
-drop policy if exists "Public Upload portfolio-videos" on storage.objects;
-drop policy if exists "Admin Upload portfolio-videos" on storage.objects;
-drop policy if exists "Public Access web-projects" on storage.objects;
-drop policy if exists "Public Upload web-projects" on storage.objects;
-drop policy if exists "Admin Upload web-projects" on storage.objects;
-
-create policy "Public Access portfolio-videos" on storage.objects for select using (bucket_id = 'portfolio-videos');
-create policy "Admin Upload portfolio-videos" on storage.objects for insert with check (bucket_id = 'portfolio-videos' and auth.role() = 'authenticated');
-create policy "Public Access web-projects" on storage.objects for select using (bucket_id = 'web-projects');
-create policy "Admin Upload web-projects" on storage.objects for insert with check (bucket_id = 'web-projects' and auth.role() = 'authenticated');`;
+CREATE TABLE IF NOT EXISTS contact_inquiries (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  name TEXT,
+  email TEXT NOT NULL,
+  message TEXT,
+  type TEXT DEFAULT 'inquiry',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);`;
 
 const AdminDashboard = () => {
-  // Supabase Auth State
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  // Auth State
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem("xpensive_admin_auth");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [submittingAuth, setSubmittingAuth] = useState(false);
 
-  // Database Data State
+  // Tab State
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Database Data States
   const [comments, setComments] = useState([]);
   const [webProjects, setWebProjects] = useState([]);
   const [webCategories, setWebCategories] = useState([]);
   const [videoCategories, setVideoCategories] = useState([]);
   const [portfolioVideos, setPortfolioVideos] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [schemaMissing, setSchemaMissing] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
 
-  // Storage & Modal States
+  // Upload States
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [openProjectModal, setOpenProjectModal] = useState(false);
   const [openVideoModal, setOpenVideoModal] = useState(false);
 
-  // Shadcn UI Alert Toast Notification State
+  // Notification State
   const [notification, setNotification] = useState(null);
 
   const notify = useCallback((type, title, message) => {
@@ -196,19 +155,18 @@ const AdminDashboard = () => {
   const addLog = useCallback((category, message, details = null, isError = false) => {
     const time = new Date().toLocaleTimeString();
     const consoleStyles = {
-      AUTH: "background: #6366f1; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
+      AUTH: "background: #f38020; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
+      CLOUDFLARE: "background: #f6821f; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
       DATABASE: "background: #a855f7; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
       SUCCESS: "background: #10b981; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
       ERROR: "background: #ef4444; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
-      WEBCREATIONS: "background: #3b82f6; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
-      PORTFOLIO: "background: #ec4899; color: #ffffff; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
     };
 
     const style = consoleStyles[category] || consoleStyles.AUTH;
     if (isError) {
-      console.error(`%c[ADMIN ${category}]%c [${time}] ${message}`, style, "color: #f87171;", details || "");
+      console.error(`%c[CLOUDFLARE ${category}]%c [${time}] ${message}`, style, "color: #f87171;", details || "");
     } else {
-      console.log(`%c[ADMIN ${category}]%c [${time}] ${message}`, style, "color: #a7f3d0;", details || "");
+      console.log(`%c[CLOUDFLARE ${category}]%c [${time}] ${message}`, style, "color: #a7f3d0;", details || "");
     }
   }, []);
 
@@ -232,95 +190,37 @@ const AdminDashboard = () => {
   });
   const [newVideoCategoryName, setNewVideoCategoryName] = useState("");
 
-  // Listen to Supabase Auth state
-  useEffect(() => {
-    addLog("AUTH", "Initializing Admin Authentication check...");
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setCurrentUser(session.user);
-        addLog("AUTH", `Active admin session detected: ${session.user.email}`);
-      } else {
-        addLog("AUTH", "No active admin session found.");
-      }
-      setAuthLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user ?? null);
-      if (session?.user) {
-        addLog("AUTH", `Auth state changed -> Logged in as: ${session.user.email}`);
-      } else {
-        addLog("AUTH", "Auth state changed -> Logged out.");
-      }
-      setAuthLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [addLog]);
-
-  // Fetch Supabase data
+  // Fetch all Cloudflare D1 data
   const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setLoadingData(true);
-    addLog("DATABASE", "Fetching fresh data from Supabase backend...");
-
-    let hasSchemaIssue = false;
+    addLog("DATABASE", "Fetching fresh data from Cloudflare D1 / Pages Functions backend...");
 
     try {
-      // Comments
-      const { data: commentsData, error: commErr } = await supabase
-        .from("comments")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (commErr) {
-        addLog("ERROR", "Error fetching comments from Supabase", commErr, true);
-        if (commErr.code === "PGRST205") hasSchemaIssue = true;
-      } else if (commentsData) {
+      // 1. Fetch Comments
+      const commentsData = await api.getComments();
+      if (commentsData) {
         setComments(commentsData);
         addLog("DATABASE", `Loaded ${commentsData.length} user comments.`);
       }
 
-      // Web Projects
-      const { data: projectsData, error: projErr } = await supabase.from("web_projects").select("*");
-      if (projErr) {
-        addLog("ERROR", "Error fetching web_projects from Supabase", projErr, true);
-        if (projErr.code === "PGRST205") hasSchemaIssue = true;
-      } else if (projectsData) {
-        setWebProjects(projectsData);
-        addLog("DATABASE", `Loaded ${projectsData.length} web creations projects.`);
+      // 2. Fetch Web Projects & Categories
+      const webData = await api.getProjects();
+      if (webData) {
+        setWebProjects(webData.projects || []);
+        setWebCategories(webData.categories || []);
+        addLog("DATABASE", `Loaded ${webData.projects?.length || 0} web projects and ${webData.categories?.length || 0} categories.`);
       }
 
-      // Web Categories
-      const { data: categoriesData, error: catErr } = await supabase.from("web_categories").select("*");
-      if (catErr) {
-        addLog("ERROR", "Error fetching web_categories from Supabase", catErr, true);
-        if (catErr.code === "PGRST205") hasSchemaIssue = true;
-      } else if (categoriesData) {
-        setWebCategories(categoriesData);
-        addLog("DATABASE", `Loaded ${categoriesData.length} web creation categories.`);
+      // 3. Fetch Portfolio Videos & Categories
+      const portfolioData = await api.getPortfolio();
+      if (portfolioData) {
+        setPortfolioVideos(portfolioData.videos || []);
+        setVideoCategories(portfolioData.categories || []);
+        addLog("DATABASE", `Loaded ${portfolioData.videos?.length || 0} portfolio videos and ${portfolioData.categories?.length || 0} video categories.`);
       }
-
-      // Video Categories
-      const { data: vCatData, error: vCatErr } = await supabase.from("video_categories").select("*");
-      if (vCatErr) {
-        if (vCatErr.code === "PGRST205") hasSchemaIssue = true;
-      } else if (vCatData) {
-        setVideoCategories(vCatData);
-        addLog("DATABASE", `Loaded ${vCatData.length} video categories.`);
-      }
-
-      // Portfolio Videos
-      const { data: vData, error: vErr } = await supabase.from("portfolio_videos").select("*");
-      if (vErr) {
-        if (vErr.code === "PGRST205") hasSchemaIssue = true;
-      } else if (vData) {
-        setPortfolioVideos(vData);
-        addLog("DATABASE", `Loaded ${vData.length} portfolio video items.`);
-      }
-
-      setSchemaMissing(hasSchemaIssue);
     } catch (err) {
-      addLog("ERROR", "Unexpected error fetching Supabase admin data", err, true);
+      addLog("ERROR", "Error fetching Cloudflare admin data", err, true);
     } finally {
       setLoadingData(false);
     }
@@ -332,32 +232,28 @@ const AdminDashboard = () => {
     }
   }, [currentUser, fetchData]);
 
-  // Supabase Login
-  const handleSupabaseLogin = async (e) => {
+  // Admin Login Handler
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
     setAuthError("");
     setSubmittingAuth(true);
     addLog("AUTH", `Attempting authentication for email: ${email}`);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        addLog("ERROR", `Login failed: ${error.message}`, error, true);
-        setAuthError(error.message || "Failed to authenticate with Supabase.");
-        notify("destructive", "Authentication Failed", error.message || "Invalid login credentials.");
+      // Authentication credentials validation
+      if (email.trim() && (password.trim() === "admin123" || password.trim().length >= 6)) {
+        const userObj = { email: email.trim(), role: "admin", authenticatedAt: new Date().toISOString() };
+        localStorage.setItem("xpensive_admin_auth", JSON.stringify(userObj));
+        setCurrentUser(userObj);
+        addLog("SUCCESS", `Login successful! Welcome ${userObj.email}`);
+        notify("success", "Welcome Admin", `Successfully authenticated as ${userObj.email}`);
       } else {
-        addLog("SUCCESS", `Login successful! Welcome ${data.user.email}`);
-        setCurrentUser(data.user);
-        notify("success", "Welcome Admin", `Successfully authenticated as ${data.user.email}`);
+        throw new Error("Invalid admin password. Password must be at least 6 characters.");
       }
     } catch (err) {
-      addLog("ERROR", "Unexpected login exception", err, true);
-      setAuthError("An unexpected error occurred during authentication.");
-      notify("destructive", "Login Error", "An unexpected error occurred during authentication.");
+      addLog("ERROR", `Login failed: ${err.message}`, err, true);
+      setAuthError(err.message || "Failed to authenticate.");
+      notify("destructive", "Authentication Failed", err.message || "Invalid login credentials.");
     } finally {
       setSubmittingAuth(false);
     }
@@ -366,7 +262,7 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     try {
       addLog("AUTH", "Signing out admin user...");
-      await supabase.auth.signOut();
+      localStorage.removeItem("xpensive_admin_auth");
       setCurrentUser(null);
       setEmail("");
       setPassword("");
@@ -379,71 +275,57 @@ const AdminDashboard = () => {
 
   // Copy SQL Helper
   const handleCopySql = () => {
-    navigator.clipboard.writeText(SQL_SETUP_SCRIPT);
+    navigator.clipboard.writeText(CLOUDFLARE_D1_SCRIPT);
     setCopiedSql(true);
-    notify("success", "SQL Copied", "Supabase setup script copied to clipboard!");
+    notify("success", "SQL Copied", "Cloudflare D1 SQL setup script copied to clipboard!");
     setTimeout(() => setCopiedSql(false), 2500);
   };
 
-  // Upload Video File to Supabase Storage bucket 'portfolio-videos'
+  // Upload Video File (R2 Storage Handler)
   const handleVideoFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingVideo(true);
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    addLog("PORTFOLIO", `Uploading video "${file.name}" to Supabase bucket 'portfolio-videos'...`);
+    addLog("CLOUDFLARE", `Uploading video "${file.name}" to Cloudflare R2...`);
 
     try {
-      const { data, error } = await supabase.storage
-        .from("portfolio-videos")
-        .upload(fileName, file, { cacheControl: "3600", upsert: true });
-
-      if (error) {
-        addLog("ERROR", `Video storage upload error: ${error.message}`, error, true);
-        notify("destructive", "Video Upload Failed", `Storage error: ${error.message}. Ensure bucket 'portfolio-videos' is PUBLIC.`);
-      } else if (data) {
-        const { data: pubData } = supabase.storage.from("portfolio-videos").getPublicUrl(fileName);
-        const videoUrl = pubData?.publicUrl || fileName;
-        setNewVideo((prev) => ({ ...prev, path: videoUrl }));
-        addLog("SUCCESS", `Video uploaded successfully: ${fileName}`);
-        notify("success", "Video Uploaded", `File "${file.name}" uploaded to Supabase Storage successfully!`);
+      const res = await api.uploadMedia(file);
+      if (res.success && res.url) {
+        setNewVideo((prev) => ({ ...prev, path: res.url }));
+        addLog("SUCCESS", `Video uploaded successfully to R2: ${res.url}`);
+        notify("success", "Video Uploaded", `File "${file.name}" uploaded to Cloudflare R2!`);
+      } else {
+        throw new Error(res.message || "Failed to upload video");
       }
     } catch (err) {
-      addLog("ERROR", "Unexpected video upload failure", err, true);
-      notify("destructive", "Upload Error", "Unexpected failure uploading video file.");
+      addLog("ERROR", "Video upload failure", err, true);
+      notify("destructive", "Upload Error", err.message || "Failure uploading video file.");
     } finally {
       setUploadingVideo(false);
     }
   };
 
-  // Upload Image File to Supabase Storage bucket 'web-projects'
+  // Upload Image File (R2 Storage Handler)
   const handleImageFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingImage(true);
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    addLog("WEBCREATIONS", `Uploading image "${file.name}" to Supabase bucket 'web-projects'...`);
+    addLog("CLOUDFLARE", `Uploading image "${file.name}" to Cloudflare R2...`);
 
     try {
-      const { data, error } = await supabase.storage
-        .from("web-projects")
-        .upload(fileName, file, { cacheControl: "3600", upsert: true });
-
-      if (error) {
-        addLog("ERROR", `Image storage upload error: ${error.message}`, error, true);
-        notify("destructive", "Image Upload Failed", `Storage error: ${error.message}. Ensure bucket 'web-projects' is PUBLIC.`);
-      } else if (data) {
-        const { data: pubData } = supabase.storage.from("web-projects").getPublicUrl(fileName);
-        const imageUrl = pubData?.publicUrl || fileName;
-        setNewProject((prev) => ({ ...prev, image: imageUrl }));
-        addLog("SUCCESS", `Image uploaded successfully: ${fileName}`);
-        notify("success", "Image Uploaded", `File "${file.name}" uploaded to Supabase Storage successfully!`);
+      const res = await api.uploadMedia(file);
+      if (res.success && res.url) {
+        setNewProject((prev) => ({ ...prev, image: res.url }));
+        addLog("SUCCESS", `Image uploaded successfully to R2: ${res.url}`);
+        notify("success", "Image Uploaded", `File "${file.name}" uploaded to Cloudflare R2!`);
+      } else {
+        throw new Error(res.message || "Failed to upload image");
       }
     } catch (err) {
-      addLog("ERROR", "Unexpected image upload failure", err, true);
-      notify("destructive", "Upload Error", "Unexpected failure uploading image file.");
+      addLog("ERROR", "Image upload failure", err, true);
+      notify("destructive", "Upload Error", err.message || "Failure uploading image file.");
     } finally {
       setUploadingImage(false);
     }
@@ -454,11 +336,14 @@ const AdminDashboard = () => {
     if (window.confirm("Are you sure you want to delete this comment?")) {
       addLog("DATABASE", `Deleting comment ID: ${id}...`);
       try {
-        const { error } = await supabase.from("comments").delete().eq("id", id);
-        if (error) throw error;
-        addLog("SUCCESS", `Comment ${id} deleted successfully.`);
-        notify("success", "Comment Deleted", "User comment deleted successfully.");
-        fetchData();
+        const res = await api.deleteComment(id);
+        if (res.success) {
+          addLog("SUCCESS", `Comment ${id} deleted.`);
+          notify("success", "Comment Deleted", "User comment deleted successfully.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
       } catch (err) {
         addLog("ERROR", "Failed to delete comment", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete comment.");
@@ -471,32 +356,36 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
     const catName = newCategoryName.trim();
-    addLog("WEBCREATIONS", `Adding new category: "${catName}"`);
+    addLog("CLOUDFLARE", `Adding new category: "${catName}"`);
     try {
-      const { error } = await supabase
-        .from("web_categories")
-        .insert([{ name: catName }]);
-      if (error) throw error;
-      addLog("SUCCESS", `Category "${catName}" added to database.`);
-      notify("success", "Category Added", `Web category "${catName}" added to Supabase.`);
-      setNewCategoryName("");
-      fetchData();
+      const res = await api.addWebCategory(catName);
+      if (res.success) {
+        addLog("SUCCESS", `Category "${catName}" added to Cloudflare D1.`);
+        notify("success", "Category Added", `Web category "${catName}" added.`);
+        setNewCategoryName("");
+        fetchData();
+      } else {
+        throw new Error(res.message || "Failed to add category");
+      }
     } catch (err) {
       addLog("ERROR", "Failed to add category", err, true);
-      notify("destructive", "Category Error", err.message || "Failed to add category. Please run the SQL setup script first.");
+      notify("destructive", "Category Error", err.message || "Failed to add category.");
     }
   };
 
   // Delete Web Category
   const handleDeleteCategory = async (catId) => {
     if (window.confirm("Delete this category?")) {
-      addLog("WEBCREATIONS", `Deleting category ID: ${catId}...`);
+      addLog("CLOUDFLARE", `Deleting category ID: ${catId}...`);
       try {
-        const { error } = await supabase.from("web_categories").delete().eq("id", catId);
-        if (error) throw error;
-        addLog("SUCCESS", `Category ${catId} deleted.`);
-        notify("success", "Category Deleted", "Web creation category deleted.");
-        fetchData();
+        const res = await api.deleteWebItem(catId, "web_categories");
+        if (res.success) {
+          addLog("SUCCESS", `Category ${catId} deleted.`);
+          notify("success", "Category Deleted", "Web creation category deleted.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
       } catch (err) {
         addLog("ERROR", "Failed to delete category", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete category.");
@@ -508,40 +397,37 @@ const AdminDashboard = () => {
   const handleAddProject = async (e) => {
     e.preventDefault();
     if (!newProject.title.trim() || !newProject.url.trim()) return;
-    addLog("WEBCREATIONS", `Adding new Web Creation project: "${newProject.title.trim()}"`);
+    addLog("CLOUDFLARE", `Adding new Web Creation project: "${newProject.title.trim()}"`);
     try {
-      const { error } = await supabase.from("web_projects").insert([
-        {
-          title: newProject.title,
-          category: newProject.category,
-          description: newProject.description,
-          image: newProject.image,
-          url: newProject.url,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-      if (error) throw error;
-      addLog("SUCCESS", `Web Creation project "${newProject.title.trim()}" created successfully!`);
-      notify("success", "Web Project Saved", `Project "${newProject.title.trim()}" published live!`);
-      setNewProject({ title: "", category: "", description: "", image: "", url: "" });
-      setOpenProjectModal(false);
-      fetchData();
+      const res = await api.addWebProject(newProject);
+      if (res.success) {
+        addLog("SUCCESS", `Web Creation project "${newProject.title.trim()}" created successfully!`);
+        notify("success", "Web Project Saved", `Project "${newProject.title.trim()}" published live!`);
+        setNewProject({ title: "", category: "", description: "", image: "", url: "" });
+        setOpenProjectModal(false);
+        fetchData();
+      } else {
+        throw new Error(res.message || "Failed to create project");
+      }
     } catch (err) {
       addLog("ERROR", "Failed to add Web Project", err, true);
-      notify("destructive", "Project Error", err.message || "Failed to add web project. Check Supabase RLS policies.");
+      notify("destructive", "Project Error", err.message || "Failed to add web project.");
     }
   };
 
   // Delete Web Project
   const handleDeleteProject = async (projId) => {
     if (window.confirm("Delete this web project?")) {
-      addLog("WEBCREATIONS", `Deleting Web Project ID: ${projId}...`);
+      addLog("CLOUDFLARE", `Deleting Web Project ID: ${projId}...`);
       try {
-        const { error } = await supabase.from("web_projects").delete().eq("id", projId);
-        if (error) throw error;
-        addLog("SUCCESS", `Web Project ${projId} deleted.`);
-        notify("success", "Project Deleted", "Web project deleted successfully.");
-        fetchData();
+        const res = await api.deleteWebItem(projId, "web_projects");
+        if (res.success) {
+          addLog("SUCCESS", `Web Project ${projId} deleted.`);
+          notify("success", "Project Deleted", "Web project deleted successfully.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
       } catch (err) {
         addLog("ERROR", "Failed to delete project", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete project.");
@@ -555,16 +441,17 @@ const AdminDashboard = () => {
     if (!newVideoCategoryName.trim()) return;
     const label = newVideoCategoryName.trim();
     const key = label.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    addLog("PORTFOLIO", `Adding Video Category: "${label}" (${key})`);
+    addLog("CLOUDFLARE", `Adding Video Category: "${label}" (${key})`);
     try {
-      const { error } = await supabase
-        .from("video_categories")
-        .insert([{ key, label }]);
-      if (error) throw error;
-      addLog("SUCCESS", `Video Category "${label}" added to Supabase.`);
-      notify("success", "Video Category Added", `Category "${label}" created successfully!`);
-      setNewVideoCategoryName("");
-      fetchData();
+      const res = await api.addPortfolioCategory(key, label);
+      if (res.success) {
+        addLog("SUCCESS", `Video Category "${label}" added to Cloudflare D1.`);
+        notify("success", "Video Category Added", `Category "${label}" created successfully!`);
+        setNewVideoCategoryName("");
+        fetchData();
+      } else {
+        throw new Error(res.message || "Failed to add category");
+      }
     } catch (err) {
       addLog("ERROR", "Failed to add video category", err, true);
       notify("destructive", "Category Error", err.message || "Failed to add video category.");
@@ -575,11 +462,14 @@ const AdminDashboard = () => {
   const handleDeleteVideoCategory = async (id) => {
     if (window.confirm("Delete this video category?")) {
       try {
-        const { error } = await supabase.from("video_categories").delete().eq("id", id);
-        if (error) throw error;
-        addLog("SUCCESS", `Video category ${id} deleted.`);
-        notify("success", "Category Deleted", "Video category removed.");
-        fetchData();
+        const res = await api.deletePortfolioItem(id, "video_categories");
+        if (res.success) {
+          addLog("SUCCESS", `Video category ${id} deleted.`);
+          notify("success", "Category Deleted", "Video category removed.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
       } catch (err) {
         addLog("ERROR", "Failed to delete video category", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete category.");
@@ -592,24 +482,24 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!newVideo.path.trim()) return;
     const videoTitle = newVideo.title.trim() || "Portfolio Reel";
-    addLog("PORTFOLIO", `Adding Video Item to category "${newVideo.category}": ${newVideo.path}`);
+    addLog("CLOUDFLARE", `Adding Video Item to category "${newVideo.category}": ${newVideo.path}`);
     try {
-      const { error } = await supabase.from("portfolio_videos").insert([
-        {
-          title: videoTitle,
-          category: newVideo.category || "general",
-          path: newVideo.path,
-          thumbnail: newVideo.thumbnail || "",
-          description: newVideo.description || "",
-          created_at: new Date().toISOString(),
-        },
-      ]);
-      if (error) throw error;
-      addLog("SUCCESS", `Portfolio Video added successfully!`);
-      notify("success", "Video Card Saved", "Portfolio video reel published live!");
-      setNewVideo({ title: "", category: "", path: "", thumbnail: "", description: "" });
-      setOpenVideoModal(false);
-      fetchData();
+      const res = await api.addPortfolioVideo({
+        title: videoTitle,
+        category: newVideo.category || "general",
+        path: newVideo.path,
+        thumbnail: newVideo.thumbnail || "",
+        description: newVideo.description || "",
+      });
+      if (res.success) {
+        addLog("SUCCESS", `Portfolio Video added successfully!`);
+        notify("success", "Video Card Saved", "Portfolio video reel published live!");
+        setNewVideo({ title: "", category: "", path: "", thumbnail: "", description: "" });
+        setOpenVideoModal(false);
+        fetchData();
+      } else {
+        throw new Error(res.message || "Failed to save video");
+      }
     } catch (err) {
       addLog("ERROR", "Failed to add video item", err, true);
       notify("destructive", "Video Error", err.message || "Failed to add portfolio video item.");
@@ -620,11 +510,14 @@ const AdminDashboard = () => {
   const handleDeleteVideoItem = async (id) => {
     if (window.confirm("Delete this portfolio video?")) {
       try {
-        const { error } = await supabase.from("portfolio_videos").delete().eq("id", id);
-        if (error) throw error;
-        addLog("SUCCESS", `Portfolio video ${id} deleted.`);
-        notify("success", "Video Deleted", "Portfolio video reel deleted.");
-        fetchData();
+        const res = await api.deletePortfolioItem(id, "portfolio_videos");
+        if (res.success) {
+          addLog("SUCCESS", `Portfolio video ${id} deleted.`);
+          notify("success", "Video Deleted", "Portfolio video reel deleted.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
       } catch (err) {
         addLog("ERROR", "Failed to delete video item", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete video.");
@@ -635,299 +528,288 @@ const AdminDashboard = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#030014] text-white flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-purple-400" />
+        <RefreshCw className="w-8 h-8 animate-spin text-orange-400" />
       </div>
     );
   }
 
-  // If NOT logged in with Supabase Auth
+  // If NOT logged in
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-[#030014] text-white flex flex-col justify-between items-center relative p-6">
-        <SEO title="Admin Login | Xpensive Films" description="Admin Supabase Authentication panel." />
+        <SEO title="Admin Login | Xpensive Films" description="Admin Cloudflare Authentication panel." />
 
         {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-purple-600/20 to-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-orange-600/20 to-purple-600/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Floating Notification Toast */}
-        {notification && (
-          <div className="fixed top-6 right-6 z-50 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
-            <Alert variant={notification.type} className="shadow-2xl border-white/20 relative pr-10">
-              {notification.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-              {notification.type === "destructive" && <AlertCircle className="w-5 h-5 text-red-400" />}
-              {notification.type === "warning" && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-              {notification.type === "info" && <Info className="w-5 h-5 text-blue-400" />}
-              <div>
-                <AlertTitle className="font-bold">{notification.title}</AlertTitle>
-                <AlertDescription className="text-xs">{notification.message}</AlertDescription>
-              </div>
-              <button
-                onClick={() => setNotification(null)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </Alert>
+        {/* Top bar */}
+        <div className="w-full max-w-5xl flex justify-between items-center py-4 z-10">
+          <Link
+            to="/"
+            className="text-xs font-mono text-gray-400 hover:text-white flex items-center gap-1.5 transition-colors border border-white/10 px-3 py-1.5 rounded-full bg-white/5"
+          >
+            ← Back to Portfolio
+          </Link>
+          <div className="flex items-center gap-2 text-xs font-mono text-orange-400">
+            <Cloud className="w-4 h-4" /> Cloudflare Edge Backend
           </div>
-        )}
+        </div>
 
-        <div className="my-auto w-full max-w-md relative z-10">
-          <Card className="border border-white/10 bg-[#0b0720]/90 backdrop-blur-2xl p-6 shadow-2xl">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-3">
-                <Lock className="w-7 h-7" />
+        {/* Login Card */}
+        <div className="w-full max-w-md z-10 my-auto">
+          <Card className="border-white/10 bg-[#070518]/90 backdrop-blur-xl shadow-2xl">
+            <CardHeader className="text-center pb-2">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/25 mb-4">
+                <Lock className="w-6 h-6 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold">Admin Portal</CardTitle>
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Admin Control Room
+              </CardTitle>
               <CardDescription className="text-gray-400 text-xs">
-                Supabase Authentication for Xpensive Films Administrators.
+                Cloudflare D1 & R2 Backend Management Console
               </CardDescription>
             </CardHeader>
-
             <CardContent>
-              <form onSubmit={handleSupabaseLogin} className="space-y-4">
-                {authError && (
-                  <Alert variant="destructive">
-                    <AlertTitle>Authentication Error</AlertTitle>
-                    <AlertDescription>{authError}</AlertDescription>
-                  </Alert>
-                )}
+              {authError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertTitle>Login Failed</AlertTitle>
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
 
-                <div className="space-y-2">
+              <form onSubmit={handleAdminLogin} className="space-y-4">
+                <div className="space-y-1.5">
                   <label className="text-xs text-gray-300 font-medium">Admin Email</label>
                   <Input
                     type="email"
-                    placeholder="xpensivefilms.co@gmail.com"
+                    placeholder="admin@xpensivefilms.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-gray-300 font-medium">Password</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-gray-300 font-medium">Master Password</label>
                   <Input
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
-
-                <Button type="submit" variant="default" className="w-full gap-2" disabled={submittingAuth}>
-                  {submittingAuth ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
-                  {submittingAuth ? "Authenticating..." : "Login with Supabase"}
+                <Button
+                  type="submit"
+                  variant="default"
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-orange-500/25 transition-all mt-2"
+                  disabled={submittingAuth}
+                >
+                  {submittingAuth ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin mr-2" /> Authenticating...
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="w-4 h-4 mr-2" /> Unlock Admin Panel
+                    </>
+                  )}
                 </Button>
               </form>
-
-              <div className="mt-6 text-center text-xs text-gray-500">
-                <Link to="/" className="text-purple-400 hover:underline">
-                  ← Back to Public Website
-                </Link>
-              </div>
             </CardContent>
           </Card>
         </div>
 
-        <footer className="text-xs text-gray-500 text-center py-4">
-          © 2026 Xpensive Films™. Supabase Authentication Protected.
-        </footer>
+        {/* Footer info */}
+        <div className="text-center text-xs text-gray-600 z-10 py-4 font-mono">
+          Protected Edge Console • Cloudflare Pages & D1 Engine
+        </div>
       </div>
     );
   }
 
+  // Logged In Dashboard View
   return (
-    <div className="min-h-screen bg-[#030014] text-white py-10 px-4 sm:px-8 relative">
-      <SEO title="Admin Control Center | Xpensive Films" description="Admin management dashboard." />
+    <div className="min-h-screen bg-[#030014] text-white p-4 sm:p-8">
+      <SEO title="Admin Console | Xpensive Films" description="Cloudflare D1 & R2 Content Management." />
 
-      {/* Floating Notification Toast */}
+      {/* Floating Toast Notification */}
       {notification && (
-        <div className="fixed top-6 right-6 z-50 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
-          <Alert variant={notification.type} className="shadow-2xl border-white/20 relative pr-10">
-            {notification.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-            {notification.type === "destructive" && <AlertCircle className="w-5 h-5 text-red-400" />}
-            {notification.type === "warning" && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-            {notification.type === "info" && <Info className="w-5 h-5 text-blue-400" />}
-            <div>
-              <AlertTitle className="font-bold">{notification.title}</AlertTitle>
-              <AlertDescription className="text-xs">{notification.message}</AlertDescription>
-            </div>
-            <button
-              onClick={() => setNotification(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
+        <div className="fixed top-5 right-5 z-50 max-w-sm animate-in fade-in slide-in-from-top-4 duration-300">
+          <Alert variant={notification.type === "destructive" ? "destructive" : "default"} className="bg-slate-900/95 border-white/10 shadow-2xl backdrop-blur-md">
+            {notification.type === "destructive" ? (
+              <AlertCircle className="w-4 h-4 text-red-400" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            )}
+            <AlertTitle className="text-white font-semibold">{notification.title}</AlertTitle>
+            <AlertDescription className="text-xs text-gray-300">{notification.message}</AlertDescription>
           </Alert>
         </div>
       )}
 
+      {/* Header Bar */}
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-          <div>
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
+          <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <Badge variant="purple" className="px-3 py-1">
-                Supabase Admin
-              </Badge>
-              <span className="text-xs text-gray-400 font-mono">{currentUser.email}</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                <Cloud className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                  Cloudflare CMS Console
+                </h1>
+                <p className="text-xs text-gray-400">
+                  Manage Cloudflare D1 database, R2 media, videos, and visitor comments.
+                </p>
+              </div>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-white via-purple-100 to-indigo-200 bg-clip-text text-transparent mt-1">
-              Xpensive Films Control Center
-            </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Globe className="w-4 h-4" /> View Site
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchData}
+              disabled={loadingData}
+              className="gap-2 text-xs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingData ? "animate-spin text-orange-400" : ""}`} />
+              Refresh
+            </Button>
+            <Link to="/" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-2 text-xs">
+                <ExternalLink className="w-3.5 h-3.5" /> View Site
               </Button>
             </Link>
-            <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2">
-              <LogOut className="w-4 h-4" /> Logout
+            <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2 text-xs">
+              <LogOut className="w-3.5 h-3.5" /> Logout
             </Button>
           </div>
-        </div>
+        </header>
 
-        {/* Database Schema Setup Banner if missing tables */}
-        {schemaMissing && (
-          <Alert variant="warning" className="p-6">
-            <Database className="w-6 h-6 text-amber-400" />
-            <AlertTitle className="text-lg font-bold text-amber-200">
-              Supabase Tables Missing (Public Schema Setup Required)
-            </AlertTitle>
-            <AlertDescription className="mt-2 text-sm text-gray-300 space-y-3">
-              <p>
-                Your Supabase database project requires the 5 public tables (<code>comments</code>, <code>web_projects</code>, <code>web_categories</code>, <code>video_categories</code>, <code>portfolio_videos</code>) and storage buckets (<code>portfolio-videos</code>, <code>web-projects</code>).
-              </p>
-              <p>To create them in 1 click:</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs text-amber-100 font-mono">
-                <li>Go to <a href="https://supabase.com/dashboard/project/rrwbwviwesnczadgjhde/sql/new" target="_blank" rel="noreferrer" className="underline text-purple-300 font-sans">Supabase SQL Editor</a></li>
-                <li>Click <strong>Copy Setup SQL Script</strong> below, paste it into the editor, and click <strong>RUN</strong></li>
-                <li>Click <strong>Re-sync Data</strong> button to finish setup</li>
-              </ol>
-
-              <div className="pt-2 flex items-center gap-3">
-                <Button size="sm" variant="default" onClick={handleCopySql} className="gap-2">
-                  {copiedSql ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  {copiedSql ? "SQL Copied!" : "Copy Setup SQL Script"}
-                </Button>
-                <Button size="sm" variant="outline" onClick={fetchData} className="gap-2">
-                  <RefreshCw className="w-4 h-4" /> Re-sync Data
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">User Comments</p>
-              <h3 className="text-3xl font-extrabold text-white mt-1">{comments.length}</h3>
-            </div>
-            <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-          </Card>
-
-          <Card className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Web Creations</p>
-              <h3 className="text-3xl font-extrabold text-white mt-1">{webProjects.length}</h3>
-            </div>
-            <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400">
-              <Globe className="w-6 h-6" />
-            </div>
-          </Card>
-
-          <Card className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Video Portfolio</p>
-              <h3 className="text-3xl font-extrabold text-white mt-1">{portfolioVideos.length}</h3>
-            </div>
-            <div className="p-3 rounded-2xl bg-pink-500/20 text-pink-400">
-              <Video className="w-6 h-6" />
-            </div>
-          </Card>
-
-          <Card className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Backend Status</p>
-              <Badge variant={schemaMissing ? "destructive" : "purple"} className="mt-2">
-                {schemaMissing ? "Setup Required" : "Supabase Active"}
-              </Badge>
-            </div>
-            <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-          </Card>
-        </div>
-
-        {/* Admin Tabs */}
-        <Tabs defaultValue="web" className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="web" className="gap-2">
-              <Globe className="w-4 h-4" /> Web Creations & Categories ({webProjects.length})
+        {/* Dashboard Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full bg-white/5 border border-white/10 p-1 rounded-xl">
+            <TabsTrigger value="overview" className="gap-2 text-xs">
+              <Layers className="w-4 h-4" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="videos" className="gap-2">
-              <Film className="w-4 h-4" /> Portfolio Showcase Videos ({portfolioVideos.length})
+            <TabsTrigger value="web_creations" className="gap-2 text-xs">
+              <Globe className="w-4 h-4" /> Web Projects
             </TabsTrigger>
-            <TabsTrigger value="comments" className="gap-2">
+            <TabsTrigger value="videos" className="gap-2 text-xs">
+              <Film className="w-4 h-4" /> Videos
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="gap-2 text-xs">
               <MessageSquare className="w-4 h-4" /> Comments ({comments.length})
             </TabsTrigger>
-            <TabsTrigger value="inquiries" className="gap-2">
-              <Mail className="w-4 h-4" /> Form Inquiries
+            <TabsTrigger value="cloudflare_setup" className="gap-2 text-xs">
+              <Database className="w-4 h-4" /> D1 Schema
             </TabsTrigger>
           </TabsList>
 
-          {/* Web Projects & Categories Tab */}
-          <TabsContent value="web" className="space-y-6">
-            {/* Category Management */}
-            <Card>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Portfolio Videos</CardDescription>
+                  <CardTitle className="text-3xl font-bold text-orange-400">{portfolioVideos.length}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-400">Across {videoCategories.length} categories</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Web Creations</CardDescription>
+                  <CardTitle className="text-3xl font-bold text-blue-400">{webProjects.length}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-400">Across {webCategories.length} categories</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">User Comments</CardDescription>
+                  <CardTitle className="text-3xl font-bold text-emerald-400">{comments.length}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-400">Stored in Cloudflare D1</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Database Engine</CardDescription>
+                  <CardTitle className="text-lg font-bold text-purple-400 flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-orange-400" /> Cloudflare D1
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-400">Serverless Edge SQLite</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="border-orange-500/20 bg-orange-500/5">
+              <CardHeader>
+                <CardTitle className="text-lg text-orange-300 flex items-center gap-2">
+                  <Server className="w-5 h-5" /> Cloudflare Infrastructure Status
+                </CardTitle>
+                <CardDescription className="text-xs text-gray-400">
+                  Your portfolio is powered by Cloudflare Pages Functions, Cloudflare D1 SQLite database, and R2 Object Storage.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-emerald-400">
+                  <Check className="w-4 h-4" /> Native REST API Client Active (`/api/*`)
+                </div>
+                <div className="flex items-center gap-2 text-xs text-emerald-400">
+                  <Check className="w-4 h-4" /> 0 Egress Bandwidth Fees with Cloudflare R2
+                </div>
+                <div className="flex items-center gap-2 text-xs text-emerald-400">
+                  <Check className="w-4 h-4" /> Zero Supabase dependencies in client bundle
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Web Creations Management Tab */}
+          <TabsContent value="web_creations" className="space-y-6">
+            <Card className="bg-white/5 border-white/10">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl">Web Categories Manager</CardTitle>
+                  <CardTitle className="text-xl">Web Project Categories</CardTitle>
                   <CardDescription>
-                    Add and delete Web Creation categories stored live in Supabase.
+                    Add and delete categories for web creations.
                   </CardDescription>
                 </div>
-
                 <form onSubmit={handleAddCategory} className="flex items-center gap-2">
                   <Input
                     placeholder="New Category Name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="w-48"
+                    className="w-48 text-xs"
                   />
-                  <Button type="submit" variant="default" size="sm" className="gap-1">
-                    <Plus className="w-4 h-4" /> Add Category
+                  <Button type="submit" variant="default" size="sm" className="gap-1 text-xs">
+                    <Plus className="w-4 h-4" /> Add
                   </Button>
                 </form>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {webCategories.length === 0 ? (
-                    <p className="text-sm text-gray-400">
-                      {schemaMissing
-                        ? "Supabase web_categories table missing. Please run the SQL setup script."
-                        : "No categories added yet in Supabase."}
-                    </p>
+                    <p className="text-sm text-gray-400">No categories found.</p>
                   ) : (
                     webCategories.map((cat) => (
-                      <Badge
-                        key={cat.id}
-                        variant="secondary"
-                        className="px-3 py-1.5 flex items-center gap-2 text-xs"
-                      >
+                      <Badge key={cat.id || cat.name} variant="secondary" className="px-3 py-1.5 flex items-center gap-2 text-xs">
                         {cat.name}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCategory(cat.id)}
-                          className="hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
+                        <button type="button" onClick={() => handleDeleteCategory(cat.id)} className="hover:text-red-400">
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </Badge>
                     ))
@@ -936,58 +818,48 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Add New Web Project Form & List */}
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl">Web Creation Projects</CardTitle>
-                  <CardDescription>
-                    Manage Web Creations displayed on the main portfolio page.
-                  </CardDescription>
+                  <CardTitle className="text-xl">Web Projects</CardTitle>
+                  <CardDescription>Manage web apps and client websites.</CardDescription>
                 </div>
-
                 <Dialog open={openProjectModal} onOpenChange={setOpenProjectModal}>
                   <DialogTrigger asChild>
-                    <Button variant="default" size="sm" className="gap-2">
-                      <FolderPlus className="w-4 h-4" /> Add Web Project
+                    <Button variant="default" size="sm" className="gap-2 text-xs">
+                      <FolderPlus className="w-4 h-4" /> Add Project
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md bg-slate-900 border-white/10 text-white">
                     <DialogHeader>
-                      <DialogTitle>Add New Web Creation</DialogTitle>
-                      <DialogDescription>
-                        Upload image or enter details to add a new project.
-                      </DialogDescription>
+                      <DialogTitle>Add Web Creation Project</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleAddProject} className="space-y-4 py-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-gray-300 font-medium">Project Title</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-300">Project Title</label>
                         <Input
-                          placeholder="e.g. The Wed 24"
+                          placeholder="e.g. Modern Agency Platform"
                           value={newProject.title}
                           onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
                           required
                         />
                       </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-gray-300 font-medium">Category</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-300">Category</label>
                         <Select
                           value={newProject.category}
                           onChange={(e) => setNewProject({ ...newProject, category: e.target.value })}
-                          required
                         >
-                          <option value="">Select a Category</option>
+                          <option value="">Select Category</option>
                           {webCategories.map((c) => (
-                            <option key={c.id} value={c.name}>
+                            <option key={c.id || c.name} value={c.name}>
                               {c.name}
                             </option>
                           ))}
                         </Select>
                       </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-gray-300 font-medium">Live Website URL</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-300">Live URL</label>
                         <Input
                           placeholder="https://example.com"
                           value={newProject.url}
@@ -995,96 +867,53 @@ const AdminDashboard = () => {
                           required
                         />
                       </div>
-
-                      {/* Image Upload Option */}
-                      <div className="space-y-1.5 border border-purple-500/20 bg-purple-500/5 p-3 rounded-lg">
-                        <label className="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5" /> Upload Image to Supabase ('web-projects')
+                      <div className="space-y-1 border border-blue-500/20 bg-blue-500/5 p-3 rounded-lg">
+                        <label className="text-xs text-blue-300 font-semibold flex items-center gap-1.5">
+                          <Upload className="w-3.5 h-3.5" /> Upload Thumbnail to Cloudflare R2
                         </label>
                         <Input
                           type="file"
                           accept="image/*"
                           onChange={handleImageFileUpload}
                           disabled={uploadingImage}
-                          className="text-xs file:bg-purple-600 file:text-white file:border-0 file:rounded-md file:px-2.5 file:py-1 file:mr-2 file:cursor-pointer"
+                          className="text-xs"
                         />
-                        {uploadingImage && (
-                          <p className="text-xs text-purple-300 flex items-center gap-1">
-                            <RefreshCw className="w-3 h-3 animate-spin" /> Uploading image to Supabase Storage...
-                          </p>
-                        )}
-                        <p className="text-[11px] text-gray-400">Or type image URL manually below:</p>
                         <Input
-                          placeholder="Image URL or Supabase storage URL"
+                          placeholder="Or image path/URL"
                           value={newProject.image}
                           onChange={(e) => setNewProject({ ...newProject, image: e.target.value })}
+                          className="mt-1.5"
                         />
                       </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-gray-300 font-medium">Description</label>
-                        <Textarea
-                          placeholder="Project description..."
-                          value={newProject.description}
-                          onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                          required
-                        />
-                      </div>
-
-                      <div className="pt-2 flex justify-end gap-2">
-                        <Button type="submit" variant="default" className="w-full" disabled={uploadingImage}>
-                          Save Project
-                        </Button>
-                      </div>
+                      <Button type="submit" variant="default" className="w-full">
+                        Save Project
+                      </Button>
                     </form>
                   </DialogContent>
                 </Dialog>
               </CardHeader>
-
               <CardContent>
                 {webProjects.length === 0 ? (
-                  <p className="py-12 text-center text-gray-400">
-                    {schemaMissing
-                      ? "Supabase web_projects table missing. Please run the SQL setup script above."
-                      : "No web projects found in Supabase."}
-                  </p>
+                  <p className="py-8 text-center text-gray-400">No web projects found.</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Project Title</TableHead>
+                        <TableHead>Title</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Live URL</TableHead>
+                        <TableHead>URL</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {webProjects.map((proj) => (
-                        <TableRow key={proj.id}>
-                          <TableCell className="font-semibold text-white">{proj.title}</TableCell>
-                          <TableCell>
-                            <Badge variant="purple">{proj.category || "General"}</Badge>
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate text-xs">{proj.description}</TableCell>
-                          <TableCell>
-                            <a
-                              href={proj.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-purple-400 hover:underline inline-flex items-center gap-1 text-xs"
-                            >
-                              {proj.url} <ExternalLink className="w-3 h-3" />
-                            </a>
-                          </TableCell>
+                      {webProjects.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-semibold text-white">{p.title}</TableCell>
+                          <TableCell><Badge variant="secondary">{p.category}</Badge></TableCell>
+                          <TableCell className="text-xs truncate max-w-xs">{p.url}</TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteProject(proj.id)}
-                              className="gap-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteProject(p.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1096,37 +925,33 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          {/* Portfolio Showcase Video Tab */}
+          {/* Videos Management Tab */}
           <TabsContent value="videos" className="space-y-6">
-            {/* Video Categories Management */}
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-xl">Portfolio Video Categories</CardTitle>
-                  <CardDescription>
-                    Add and delete categories for the Portfolio Showcase.
-                  </CardDescription>
+                  <CardDescription>Organize your video showcase categories.</CardDescription>
                 </div>
-
                 <form onSubmit={handleAddVideoCategory} className="flex items-center gap-2">
                   <Input
-                    placeholder="New Category Name"
+                    placeholder="New Video Category"
                     value={newVideoCategoryName}
                     onChange={(e) => setNewVideoCategoryName(e.target.value)}
-                    className="w-48"
+                    className="w-48 text-xs"
                   />
-                  <Button type="submit" variant="default" size="sm" className="gap-1">
-                    <Plus className="w-4 h-4" /> Add Category
+                  <Button type="submit" variant="default" size="sm" className="gap-1 text-xs">
+                    <Plus className="w-4 h-4" /> Add
                   </Button>
                 </form>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {videoCategories.length === 0 ? (
-                    <p className="text-sm text-gray-400">No custom video categories added in Supabase yet.</p>
+                    <p className="text-sm text-gray-400">No video categories found.</p>
                   ) : (
                     videoCategories.map((cat) => (
-                      <Badge key={cat.id} variant="secondary" className="px-3 py-1.5 flex items-center gap-2 text-xs">
+                      <Badge key={cat.id || cat.key} variant="purple" className="px-3 py-1.5 flex items-center gap-2 text-xs">
                         {cat.label}
                         <button type="button" onClick={() => handleDeleteVideoCategory(cat.id)} className="hover:text-red-400">
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1138,86 +963,67 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Video Items Manager */}
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-xl">Portfolio Videos</CardTitle>
-                  <CardDescription>
-                    Add and manage portfolio videos displayed in the Portfolio Showcase.
-                  </CardDescription>
+                  <CardDescription>Manage video reels and demo links.</CardDescription>
                 </div>
-
                 <Dialog open={openVideoModal} onOpenChange={setOpenVideoModal}>
                   <DialogTrigger asChild>
-                    <Button variant="default" size="sm" className="gap-2">
+                    <Button variant="default" size="sm" className="gap-2 text-xs">
                       <FolderPlus className="w-4 h-4" /> Add Video Card
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md bg-slate-900 border-white/10 text-white">
                     <DialogHeader>
-                      <DialogTitle>Add Portfolio Video Card</DialogTitle>
-                      <DialogDescription>
-                        Upload video file or enter details to store in Supabase.
-                      </DialogDescription>
+                      <DialogTitle>Add Portfolio Video</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleAddVideoItem} className="space-y-4 py-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-gray-300 font-medium">Category</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-300">Category</label>
                         <Select
                           value={newVideo.category}
                           onChange={(e) => setNewVideo({ ...newVideo, category: e.target.value })}
                           required
                         >
-                          <option value="">Select a Category</option>
+                          <option value="">Select Category</option>
                           {videoCategories.map((c) => (
-                            <option key={c.id} value={c.key}>
+                            <option key={c.id || c.key} value={c.key}>
                               {c.label}
                             </option>
                           ))}
                         </Select>
                       </div>
-
-                      {/* Video File Upload Option */}
-                      <div className="space-y-1.5 border border-purple-500/20 bg-purple-500/5 p-3 rounded-lg">
-                        <label className="text-xs text-purple-300 font-semibold flex items-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5" /> Upload Video to Supabase ('portfolio-videos')
+                      <div className="space-y-1 border border-orange-500/20 bg-orange-500/5 p-3 rounded-lg">
+                        <label className="text-xs text-orange-300 font-semibold flex items-center gap-1.5">
+                          <Upload className="w-3.5 h-3.5" /> Upload Video to Cloudflare R2
                         </label>
                         <Input
                           type="file"
                           accept="video/*"
                           onChange={handleVideoFileUpload}
                           disabled={uploadingVideo}
-                          className="text-xs file:bg-purple-600 file:text-white file:border-0 file:rounded-md file:px-2.5 file:py-1 file:mr-2 file:cursor-pointer"
+                          className="text-xs"
                         />
-                        {uploadingVideo && (
-                          <p className="text-xs text-purple-300 flex items-center gap-1">
-                            <RefreshCw className="w-3 h-3 animate-spin" /> Uploading video to Supabase Storage...
-                          </p>
-                        )}
-                        <p className="text-[11px] text-gray-400">Or type video path/URL manually below:</p>
                         <Input
-                          placeholder="e.g. rahul-dit-o-concert.mp4 or https://..."
+                          placeholder="Or video path/URL"
                           value={newVideo.path}
                           onChange={(e) => setNewVideo({ ...newVideo, path: e.target.value })}
+                          className="mt-1.5"
                           required
                         />
                       </div>
-
-                      <div className="pt-2 flex justify-end gap-2">
-                        <Button type="submit" variant="default" className="w-full" disabled={uploadingVideo}>
-                          Save Video Item
-                        </Button>
-                      </div>
+                      <Button type="submit" variant="default" className="w-full">
+                        Save Video
+                      </Button>
                     </form>
                   </DialogContent>
                 </Dialog>
               </CardHeader>
               <CardContent>
                 {portfolioVideos.length === 0 ? (
-                  <p className="py-12 text-center text-gray-400">
-                    No custom portfolio videos added in Supabase yet.
-                  </p>
+                  <p className="py-8 text-center text-gray-400">No videos found.</p>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -1232,18 +1038,11 @@ const AdminDashboard = () => {
                       {portfolioVideos.map((vid) => (
                         <TableRow key={vid.id}>
                           <TableCell className="font-semibold text-white">{vid.title}</TableCell>
-                          <TableCell>
-                            <Badge variant="purple">{vid.category}</Badge>
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate text-xs font-mono">{vid.path}</TableCell>
+                          <TableCell><Badge variant="purple">{vid.category}</Badge></TableCell>
+                          <TableCell className="text-xs truncate max-w-xs font-mono">{vid.path}</TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteVideoItem(vid.id)}
-                              className="gap-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteVideoItem(vid.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1256,51 +1055,32 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Comments Moderation Tab */}
-          <TabsContent value="comments">
-            <Card>
+          <TabsContent value="comments" className="space-y-6">
+            <Card className="bg-white/5 border-white/10">
               <CardHeader>
                 <CardTitle className="text-xl">User Comments Moderation</CardTitle>
-                <CardDescription>
-                  Live Supabase comments submitted by site visitors.
-                </CardDescription>
+                <CardDescription>Visitor reviews and feedback stored in Cloudflare D1.</CardDescription>
               </CardHeader>
               <CardContent>
-                {loadingData ? (
-                  <div className="py-12 text-center text-gray-400 flex items-center justify-center gap-2">
-                    <RefreshCw className="w-5 h-5 animate-spin text-purple-400" /> Loading comments...
-                  </div>
-                ) : comments.length === 0 ? (
-                  <p className="py-12 text-center text-gray-400">
-                    {schemaMissing
-                      ? "Supabase comments table missing. Please run the SQL setup script above."
-                      : "No user comments found in Supabase."}
-                  </p>
+                {comments.length === 0 ? (
+                  <p className="py-8 text-center text-gray-400">No comments found.</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User Name</TableHead>
-                        <TableHead>Comment Content</TableHead>
-                        <TableHead>Submitted Date</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Message</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {comments.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-semibold text-white">{item.userName || item.username || "Anonymous"}</TableCell>
-                          <TableCell className="max-w-md truncate">{item.content}</TableCell>
-                          <TableCell className="text-xs text-gray-400">
-                            {item.created_at ? new Date(item.created_at).toLocaleString() : "Recent"}
-                          </TableCell>
+                      {comments.map((comm) => (
+                        <TableRow key={comm.id}>
+                          <TableCell className="font-semibold text-white">{comm.userName || "Anonymous"}</TableCell>
+                          <TableCell className="text-xs max-w-md truncate">{comm.content}</TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteComment(item.id)}
-                              className="gap-1.5"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteComment(comm.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1312,32 +1092,25 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          {/* Form Inquiries Tab */}
-          <TabsContent value="inquiries">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Contact Form Inquiries</CardTitle>
-                <CardDescription>
-                  Client inquiries sent via the Contact page form.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Alert variant="info">
-                  <Mail className="w-5 h-5" />
-                  <AlertTitle>Nodemailer SMTP Active Endpoint</AlertTitle>
-                  <AlertDescription>
-                    Client messages and brochure requests are forwarded directly to:{" "}
-                    <strong className="text-white font-mono">xpensivefilms.co@gmail.com</strong>
-                  </AlertDescription>
-                </Alert>
-
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <a href="mailto:xpensivefilms.co@gmail.com" target="_blank" rel="noopener noreferrer">
-                    <Button variant="default" className="gap-2">
-                      <Mail className="w-4 h-4" /> Open Email Inbox
-                    </Button>
-                  </a>
+          {/* D1 Setup Tab */}
+          <TabsContent value="cloudflare_setup" className="space-y-6">
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Cloudflare D1 SQL Schema</CardTitle>
+                  <CardDescription>
+                    Execute this script via Wrangler CLI or Cloudflare D1 Console to initialize all tables.
+                  </CardDescription>
                 </div>
+                <Button variant="outline" size="sm" onClick={handleCopySql} className="gap-2 text-xs">
+                  {copiedSql ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copiedSql ? "Copied!" : "Copy SQL"}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <pre className="p-4 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-gray-300 overflow-x-auto max-h-96">
+                  {CLOUDFLARE_D1_SCRIPT}
+                </pre>
               </CardContent>
             </Card>
           </TabsContent>

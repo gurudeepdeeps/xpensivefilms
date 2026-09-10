@@ -1,6 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+/**
+ * Cloudflare Migration: Supabase client has been retired in favor of Cloudflare D1 + Pages Functions.
+ * Refer to src/services/api.js for all database and backend operations.
+ */
+import { api } from './services/api';
 
-const SUPABASE_URL = "https://rrwbwviwesnczadgjhde.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_JcEPZ33wrf_WHa_U75L7Dw_AosVNuio";
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export { api };
+export const isCloudflareActive = true;

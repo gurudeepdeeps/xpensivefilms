@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { supabase } from '../supabase';
+import { api } from '../services/api';
 
 import {
   Carousel,
@@ -19,57 +19,24 @@ const WebsiteProjects = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loadedImages, setLoadedImages] = useState({});
 
-  const fetchWebProjects = useCallback(async () => {
+  const fetchWebData = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('web_projects').select('*');
-      if (error) {
-        console.error("Supabase fetch web_projects error:", error);
-      } else if (data) {
-        setProjects(data);
+      const { categories: catData, projects: projData } = await api.getProjects();
+      if (projData) {
+        setProjects(projData);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
-  const fetchWebCategories = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.from('web_categories').select('*');
-      if (error) {
-        console.error("Supabase fetch web_categories error:", error);
-      } else if (data) {
-        const catNames = data.map((item) => item.name);
+      if (catData) {
+        const catNames = catData.map((item) => item.name);
         setCategories(['All', ...catNames]);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Cloudflare fetch projects error:", err);
     }
   }, []);
 
   useEffect(() => {
-    fetchWebProjects();
-    fetchWebCategories();
-
-    // Supabase Realtime subscriptions
-    const projectsChannel = supabase
-      .channel('public:web_projects')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'web_projects' }, () => {
-        fetchWebProjects();
-      })
-      .subscribe();
-
-    const categoriesChannel = supabase
-      .channel('public:web_categories')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'web_categories' }, () => {
-        fetchWebCategories();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(projectsChannel);
-      supabase.removeChannel(categoriesChannel);
-    };
-  }, [fetchWebProjects, fetchWebCategories]);
+    fetchWebData();
+  }, [fetchWebData]);
 
   const handleImageLoaded = (id) => {
     setLoadedImages((prev) => ({ ...prev, [id]: true }));
