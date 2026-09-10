@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Play, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { api } from '../services/api';
+import { getCloudflareImageUrl } from '../utils/cloudflareMedia';
 import WebsiteProjects from '../components/WebsiteProjects';
 import { Badge } from '../components/ui/badge';
 
@@ -86,26 +87,18 @@ export default function FullWidthTabs() {
     if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
       return path;
     }
-    const { data } = supabase.storage.from('portfolio-videos').getPublicUrl(path);
-    return data?.publicUrl || path;
+    return getCloudflareImageUrl('portfolio-videos', path);
   }, []);
 
   // Helper: resolve a storage path to a download URL and assign to <video>
   async function safeAssignVideoSrc(el, path) {
     if (!el || !path) return false;
     try {
-      const directUrl = /^https?:\/\//i.test(path) || path.startsWith('/');
-      if (directUrl) {
-        el.src = path;
+      const url = getVideoUrl(path);
+      if (url) {
+        el.src = url;
         return true;
       }
-
-      const { data } = supabase.storage.from('portfolio-videos').getPublicUrl(path);
-      if (data && data.publicUrl) {
-        el.src = data.publicUrl;
-        return true;
-      }
-
       return false;
     } catch (e) {
       try { console.error('[portfolio] assign video src failed', path, e); } catch (_) { }
@@ -115,14 +108,8 @@ export default function FullWidthTabs() {
 
   // Preload video URL on component mount to ensure it's ready
   async function preloadVideoUrl(path) {
-    try {
-      const storage = getStorage();
-      const url = await getDownloadURL(ref(storage, path));
-      return url;
-    } catch (e) {
-      try { console.error('[portfolio] preload video url failed', path, e); } catch (_) { }
-      return null;
-    }
+    if (!path) return null;
+    return getVideoUrl(path);
   }
 
   useEffect(() => {

@@ -26,7 +26,7 @@ const Services = memo(() => {
       title: "Website Development",
       description:
         "We create custom, responsive websites that reflect your brand and engage your audience. From design to development, we build user-friendly sites that drive results and grow your online presence.",
-      image: getSupabaseImageUrl("services-images", "website-development.webp"),
+      image: getCloudflareImageUrl("services-images", "website-development.webp"),
       category: "Development",
     },
     {
@@ -34,7 +34,7 @@ const Services = memo(() => {
       title: "Corporate Events",
       description:
         "We plan and manage professional corporate events that are seamless, impactful, and aligned with your brand. From conferences to product launches, we handle every detail to deliver a smooth and memorable experience.",
-      image: getSupabaseImageUrl("services-images", "corporate-events.webp"),
+      image: getCloudflareImageUrl("services-images", "corporate-events.webp"),
       category: "Production",
     },
     {
@@ -42,7 +42,7 @@ const Services = memo(() => {
       title: "Bars & Restaurants",
       description:
         "We shoot and edit high-quality photos and videos that showcase your food, drinks, and atmosphere, helping your brand stand out and attract customers.",
-      image: getSupabaseImageUrl("services-images", "bars-restaurants.webp"),
+      image: getCloudflareImageUrl("services-images", "bars-restaurants.webp"),
       category: "Media",
     },
     {
@@ -50,7 +50,7 @@ const Services = memo(() => {
       title: "Real Estate",
       description:
         "We shoot and edit professional photos and videos that highlight properties, enhance listings, and attract buyers. Our visuals focus on space, lighting, and detail to present each property at its best.",
-      image: getSupabaseImageUrl("services-images", "real-estate.webp"),
+      image: getCloudflareImageUrl("services-images", "real-estate.webp"),
       category: "Showcase",
     },
     {
@@ -58,7 +58,7 @@ const Services = memo(() => {
       title: "Testimonials",
       description:
         "We produce professional testimonial shoots that capture genuine client experiences with clarity and authenticity. From planning to filming and editing, we ensure each testimonial feels natural and credible.",
-      image: getSupabaseImageUrl("services-images", "testimonials.webp"),
+      image: getCloudflareImageUrl("services-images", "testimonials.webp"),
       category: "Branding",
     },
     {
@@ -66,7 +66,7 @@ const Services = memo(() => {
       title: "Digital Marketing",
       description:
         "We create data-driven digital marketing strategies that increase visibility, engagement, and conversions. From social media to online campaigns, we help brands connect with the right audience.",
-      image: getSupabaseImageUrl("services-images", "digital-marketing.webp"),
+      image: getCloudflareImageUrl("services-images", "digital-marketing.webp"),
       category: "Marketing",
     },
     {
@@ -74,7 +74,7 @@ const Services = memo(() => {
       title: "Social Media",
       description:
         "We manage your social media presence with strategic content, consistent posting, and audience engagement. Our approach helps build brand identity and grow followers.",
-      image: getSupabaseImageUrl("services-images", "social-media.webp"),
+      image: getCloudflareImageUrl("services-images", "social-media.webp"),
       category: "Growth",
     },
     {
@@ -82,7 +82,7 @@ const Services = memo(() => {
       title: "Influencer Marketing",
       description:
         "We connect brands with relevant influencers to create authentic, engaging campaigns. From strategy to execution, we manage collaborations that increase reach, trust, and brand awareness.",
-      image: getSupabaseImageUrl("services-images", "influencer-marketing.webp"),
+      image: getCloudflareImageUrl("services-images", "influencer-marketing.webp"),
       category: "Outreach",
     },
     {
@@ -90,7 +90,7 @@ const Services = memo(() => {
       title: "Podcast",
       description:
         "We handle podcast recording, editing, and production with a focus on clear sound and polished visuals. From setup to final delivery, we help create podcasts that engage audiences.",
-      image: getSupabaseImageUrl("services-images", "podcast.webp"),
+      image: getCloudflareImageUrl("services-images", "podcast.webp"),
       category: "Audio/Video",
     },
   ];

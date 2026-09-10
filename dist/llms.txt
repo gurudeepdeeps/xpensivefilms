@@ -31,7 +31,7 @@ Xpensive Films is a premier digital marketing, high-impact video editing, social
 - Instagram: https://www.instagram.com/_x.films
 - Inquiry Email: xpensivefilms.co@gmail.com
 
-## Technical Stack
+- Technical Stack
 - Frontend: React, Vite, TailwindCSS, Shadcn UI, Lucide Icons, AOS Animations
-- Database & Storage: Supabase PostgreSQL, Supabase Auth, Supabase Storage
-- Infrastructure: Vercel CDN
+- Database & Storage: Cloudflare D1 SQL, Cloudflare R2 Media Storage
+- Infrastructure: Vercel CDN & Serverless API Routes
