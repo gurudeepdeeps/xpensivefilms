@@ -15,7 +15,7 @@ To deliver agency-grade video edits and digital solutions with unmatched quality
 
 ### 1. Website Development
 We build custom responsive websites with high-performance code, sleek glassmorphism UI, fast loading times, and full SEO optimization.
-- Technologies: React, JavaScript, Vite, Tailwind CSS, Shadcn UI, Supabase backend.
+- Technologies: React, JavaScript, Vite, Tailwind CSS, Shadcn UI, Cloudflare D1 backend.
 - Best for: Companies, startups, personal portfolios, local businesses seeking a digital presence.
 
 ### 2. Corporate Events Videography & Editing
@@ -58,8 +58,8 @@ Turnkey podcast editing including multi-camera video switching, audio noise remo
 
 ## Technical & Infrastructure Overview
 - Website: https://xpensivefilms.vercel.app/
-- Database & Authentication: Supabase
-- Video & File Storage: Supabase Storage Buckets (`portfolio-videos`, `services-images`, `web-projects`)
-- Hosting: Vercel CDN
+- Database: Cloudflare D1 Edge SQL Database
+- Video & File Storage: Cloudflare R2 Media Storage (`portfolio-videos`, `services-images`, `web-projects`)
+- Hosting: Vercel Serverless & Edge CDN
 - Support Email: xpensivefilms.co@gmail.com
 - Social Handles: Instagram (@_x.films)

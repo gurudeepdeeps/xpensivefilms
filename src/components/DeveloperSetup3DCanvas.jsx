@@ -96,10 +96,10 @@ const DeveloperSetup3DCanvas = ({ isModal = false, themeMode = 'cyber' }) => {
 
         // Code Lines
         const codeLines = isLeftScreen ? [
-          { tokens: [{ t: 'use ', c: '#f43f5e' }, { t: 'supabase::storage::', c: '#a78bfa' }, { t: 'Bucket;', c: '#38bdf8' }] },
-          { tokens: [{ t: 'async fn ', c: '#f43f5e' }, { t: 'optimize_cdn_cache', c: '#60a5fa' }, { t: '() {', c: '#e5e7eb' }] },
-          { tokens: [{ t: '    let ', c: '#f43f5e' }, { t: 'cache ', c: '#38bdf8' }, { t: '= ', c: '#f43f5e' }, { t: 'Bucket::connect();', c: '#e5e7eb' }] },
-          { tokens: [{ t: '    println!(', c: '#f43f5e' }, { t: '"[OK] Storage Invalidation Done"', c: '#fde047' }, { t: ');', c: '#e5e7eb' }] },
+          { tokens: [{ t: 'use ', c: '#f43f5e' }, { t: 'cloudflare::d1::', c: '#a78bfa' }, { t: 'Database;', c: '#38bdf8' }] },
+          { tokens: [{ t: 'async fn ', c: '#f43f5e' }, { t: 'query_edge_pipeline', c: '#60a5fa' }, { t: '() {', c: '#e5e7eb' }] },
+          { tokens: [{ t: '    let ', c: '#f43f5e' }, { t: 'db ', c: '#38bdf8' }, { t: '= ', c: '#f43f5e' }, { t: 'Database::connect();', c: '#e5e7eb' }] },
+          { tokens: [{ t: '    println!(', c: '#f43f5e' }, { t: '"[OK] D1 Edge Query Synced"', c: '#fde047' }, { t: ');', c: '#e5e7eb' }] },
           { tokens: [{ t: '}', c: '#e5e7eb' }] },
         ] : [
           { tokens: [{ t: 'import ', c: '#c084fc' }, { t: '{ useState, useEffect } ', c: '#38bdf8' }, { t: 'from ', c: '#c084fc' }, { t: "'react'", c: '#fde047' }, { t: ';', c: '#9ca3af' }] },
@@ -389,7 +389,7 @@ const DeveloperSetup3DCanvas = ({ isModal = false, themeMode = 'cyber' }) => {
             <Code2 className="w-5 h-5 text-purple-400" /> Developer Workspace
           </h4>
           <p className="text-xs text-gray-400 mt-1 max-w-xs">
-            Lead developer active in IDE compiling React 7 & Supabase production sync.
+            Lead developer active in IDE compiling React 7 & Cloudflare D1 production sync.
           </p>
         </div>
         <div className="w-full max-w-xs bg-[#07080f] p-3 rounded-xl border border-white/5 font-mono text-[11px] text-left text-gray-300 space-y-1">
