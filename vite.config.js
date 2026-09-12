@@ -3,16 +3,62 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import nodemailer from 'nodemailer'
 
-// Vite plugin to serve /api/contact endpoint in local dev mode
+import portfolioHandler from './api/portfolio.js';
+import commentsHandler from './api/comments.js';
+
+function adaptHandler(handler) {
+  return (req, res) => {
+    const urlObj = new URL(req.url, `http://${req.headers.host}`);
+    req.query = Object.fromEntries(urlObj.searchParams.entries());
+
+    let bodyStr = '';
+    req.on('data', chunk => { bodyStr += chunk.toString(); });
+    req.on('end', async () => {
+      try {
+        req.body = bodyStr ? JSON.parse(bodyStr) : {};
+      } catch {
+        req.body = {};
+      }
+
+      res.status = (code) => {
+        res.statusCode = code;
+        return res;
+      };
+      res.json = (data) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(data));
+        return res;
+      };
+
+      try {
+        await handler(req, res);
+      } catch (err) {
+        console.error('Local API Handler Error:', err);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+  };
+}
+
+// Vite plugin to serve all /api/* endpoints in local dev mode
 function localApiPlugin() {
   let env = {};
   return {
     name: 'local-api-plugin',
     configResolved(config) {
       env = loadEnv(config.mode, process.cwd(), '');
+      Object.assign(process.env, env);
     },
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
+        if (req.url.startsWith('/api/portfolio')) {
+          return adaptHandler(portfolioHandler)(req, res);
+        }
+        if (req.url.startsWith('/api/comments')) {
+          return adaptHandler(commentsHandler)(req, res);
+        }
         if (req.url === '/api/contact' && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => { body += chunk.toString(); });
