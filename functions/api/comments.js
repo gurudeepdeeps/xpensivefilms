@@ -18,8 +18,9 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet({ env }) {
+  const db = env.DB || env.xpensive_films_db;
   try {
-    if (!env.DB) {
+    if (!db) {
       return jsonResponse({
         success: true,
         data: [
@@ -33,7 +34,7 @@ export async function onRequestGet({ env }) {
       });
     }
 
-    const { results } = await env.DB.prepare(
+    const { results } = await db.prepare(
       'SELECT id, userName, content, created_at FROM comments ORDER BY created_at DESC LIMIT 100'
     ).all();
 
@@ -44,6 +45,7 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ env, request }) {
+  const db = env.DB || env.xpensive_films_db;
   try {
     const body = await request.json();
     const { userName, content } = body;
@@ -57,8 +59,8 @@ export async function onRequestPost({ env, request }) {
     const id = 'comm_' + Math.random().toString(36).substring(2, 9);
     const createdAt = new Date().toISOString();
 
-    if (env.DB) {
-      await env.DB.prepare(
+    if (db) {
+      await db.prepare(
         'INSERT INTO comments (id, userName, content, created_at) VALUES (?, ?, ?, ?)'
       ).bind(id, author, cleanContent, createdAt).run();
     }
@@ -78,18 +80,19 @@ export async function onRequestPost({ env, request }) {
 }
 
 export async function onRequestDelete({ env, request }) {
+  const db = env.DB || env.xpensive_films_db;
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
 
-    if (!env.DB) {
+    if (!db) {
       return jsonResponse({ success: false, message: 'D1 Database not bound' }, 500);
     }
     if (!id) {
       return jsonResponse({ success: false, message: 'Comment ID is required' }, 400);
     }
 
-    await env.DB.prepare('DELETE FROM comments WHERE id = ?').bind(id).run();
+    await db.prepare('DELETE FROM comments WHERE id = ?').bind(id).run();
 
     return jsonResponse({ success: true, message: `Comment ${id} deleted successfully` });
   } catch (err) {

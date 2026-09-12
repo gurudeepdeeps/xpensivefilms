@@ -33,14 +33,14 @@ export async function onRequestGet({ env, request }) {
     }
 
     if (type === 'categories') {
-      const { results } = await env.DB.prepare(
+      const { results } = await db.prepare(
         'SELECT * FROM video_categories ORDER BY created_at ASC'
       ).all();
       return jsonResponse({ success: true, data: results || [] });
     }
 
     if (type === 'videos') {
-      const { results } = await env.DB.prepare(
+      const { results } = await db.prepare(
         'SELECT * FROM portfolio_videos ORDER BY created_at DESC'
       ).all();
       return jsonResponse({ success: true, data: results || [] });
@@ -48,8 +48,8 @@ export async function onRequestGet({ env, request }) {
 
     // Default: fetch both categories and videos
     const [catResult, vidResult] = await Promise.all([
-      env.DB.prepare('SELECT * FROM video_categories ORDER BY created_at ASC').all(),
-      env.DB.prepare('SELECT * FROM portfolio_videos ORDER BY created_at DESC').all(),
+      db.prepare('SELECT * FROM video_categories ORDER BY created_at ASC').all(),
+      db.prepare('SELECT * FROM portfolio_videos ORDER BY created_at DESC').all(),
     ]);
 
     return jsonResponse({
@@ -63,11 +63,12 @@ export async function onRequestGet({ env, request }) {
 }
 
 export async function onRequestPost({ env, request }) {
+  const db = env.DB || env.xpensive_films_db;
   try {
     const body = await request.json();
     const { action } = body; // 'add_video' | 'add_category'
 
-    if (!env.DB) {
+    if (!db) {
       return jsonResponse({ success: false, message: 'D1 Database not bound' }, 500);
     }
 
@@ -77,7 +78,7 @@ export async function onRequestPost({ env, request }) {
         return jsonResponse({ success: false, message: 'Key and Label are required' }, 400);
       }
       const id = 'vcat_' + Math.random().toString(36).substring(2, 9);
-      await env.DB.prepare(
+      await db.prepare(
         'INSERT INTO video_categories (id, key, label) VALUES (?, ?, ?)'
       ).bind(id, key.toLowerCase().trim(), label.trim()).run();
 
@@ -90,7 +91,7 @@ export async function onRequestPost({ env, request }) {
         return jsonResponse({ success: false, message: 'Title, category and video path are required' }, 400);
       }
       const id = 'vid_' + Math.random().toString(36).substring(2, 9);
-      await env.DB.prepare(
+      await db.prepare(
         'INSERT INTO portfolio_videos (id, title, category, path, thumbnail, description) VALUES (?, ?, ?, ?, ?, ?)'
       ).bind(id, title.trim(), category.trim(), path.trim(), thumbnail?.trim() || '', description?.trim() || '').run();
 
@@ -104,12 +105,13 @@ export async function onRequestPost({ env, request }) {
 }
 
 export async function onRequestDelete({ env, request }) {
+  const db = env.DB || env.xpensive_films_db;
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const table = url.searchParams.get('table'); // 'video_categories' | 'portfolio_videos'
 
-    if (!env.DB) {
+    if (!db) {
       return jsonResponse({ success: false, message: 'D1 Database not bound' }, 500);
     }
     if (!id || !table) {
@@ -117,7 +119,7 @@ export async function onRequestDelete({ env, request }) {
     }
 
     const validTable = table === 'video_categories' ? 'video_categories' : 'portfolio_videos';
-    await env.DB.prepare(`DELETE FROM ${validTable} WHERE id = ?`).bind(id).run();
+    await db.prepare(`DELETE FROM ${validTable} WHERE id = ?`).bind(id).run();
 
     return jsonResponse({ success: true, message: `Record ${id} deleted successfully` });
   } catch (err) {
