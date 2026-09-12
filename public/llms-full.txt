@@ -57,9 +57,9 @@ Turnkey podcast editing including multi-camera video switching, audio noise remo
 ---
 
 ## Technical & Infrastructure Overview
-- Website: https://xpensivefilms.vercel.app/
+- Website: https://xpensivefilms.pages.dev/
 - Database: Cloudflare D1 Edge SQL Database
-- Video & File Storage: Cloudflare R2 Media Storage (`portfolio-videos`, `services-images`, `web-projects`)
-- Hosting: Vercel Serverless & Edge CDN
+- Video & File Storage: Cloudflare R2 Media Storage (`portfolio-videos`, `services-images`)
+- Hosting: Cloudflare Pages & Pages Functions Edge Engine
 - Support Email: xpensivefilms.co@gmail.com
 - Social Handles: Instagram (@_x.films)

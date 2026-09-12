@@ -8,11 +8,11 @@ export default function SEO({
   name = "Xpensive Films",
   type = "website",
   image = "/share-image.webp",
-  canonical = "https://xpensivefilms.vercel.app/",
+  canonical = "https://xpensivefilms.pages.dev/",
 }) {
   const fullImageUrl = image.startsWith("http")
     ? image
-    : `https://xpensivefilms.vercel.app${image}`;
+    : `https://xpensivefilms.pages.dev${image}`;
 
   return (
     <Helmet>

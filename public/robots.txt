@@ -26,4 +26,4 @@ User-agent: cohere-ai
 Allow: /
 
 # Sitemap & LLM Documentation
-Sitemap: https://xpensivefilms.vercel.app/sitemap.xml
+Sitemap: https://xpensivefilms.pages.dev/sitemap.xml

@@ -25,12 +25,19 @@ A modern, interactive portfolio website for Xpensive Films, showcasing creative 
 - Accessible cookie banner, privacy policy, terms, and custom 404 page
 
 ## 🌐 Demo
-Live demo: [https://xpensivefilms.vercel.app]
+Live demo: [https://xpensivefilms.pages.dev]
 
 ## ‼️ Folder Structure
 ```
 Xpensive Films Portfolio/
+├── functions/
+│   └── api/ (Cloudflare Pages Edge Functions)
+│       ├── comments.js
+│       ├── contact.js
+│       ├── portfolio.js
+│       └── upload.js
 ├── public/
+│   ├── _redirects (Cloudflare SPA routing)
 │   ├── share-image.webp
 │   ├── site.webmanifest
 │   └── xfilms-logo.webp
@@ -38,26 +45,27 @@ Xpensive Films Portfolio/
 │   ├── assets/
 │   ├── components/
 │   │   └── ui/ (Shadcn UI Primitives)
-│   ├── constants/
 │   ├── Pages/
 │   │   ├── Admin.jsx
 │   │   ├── Home.jsx
 │   │   ├── About.jsx
 │   │   ├── Portofolio.jsx
 │   │   └── Services.jsx
-│   ├── lib/utils.js
-│   └── supabase.js
+│   └── services/api.js
+├── d1/
+│   └── schema.sql
 ├── index.html
 ├── package.json
 ├── tailwind.config.js
 ├── vite.config.js
+├── wrangler.toml
 └── README.md
 ```
 
 ## ⚙️ Tech Stack
 - **Frontend**: React 18, Vite, Tailwind CSS
 - **UI Components**: Shadcn UI (Carousel, Button, Card, Badge, Dialog, Tabs, Table, Alert)
-- **Backend & Database**: Supabase (PostgreSQL, Supabase Auth, Realtime & Storage)
+- **Backend & Database**: Cloudflare Pages Functions, Cloudflare D1 (Serverless SQLite), Cloudflare R2 Media Storage
 - **Animations**: Framer Motion, GSAP, AOS, Lenis smooth scroll
 - **SEO & PWA**: React Helmet Async, OpenGraph meta, site.webmanifest, sitemap.xml
 
@@ -85,10 +93,7 @@ Xpensive Films Portfolio/
    ```bash
    npx wrangler d1 execute xpensive_films_db --file=./d1/schema.sql
    ```
-2. Configure Vercel / Cloudflare Environment Variables:
-   - `CLOUDFLARE_ACCOUNT_ID`
-   - `CLOUDFLARE_D1_DATABASE_ID`
-   - `CLOUDFLARE_API_TOKEN`
+2. Cloudflare Pages automatically links D1 & R2 using `wrangler.toml`.
 
 ## 🛡️ Admin Dashboard
 Access the admin portal at `/admin` to manage:

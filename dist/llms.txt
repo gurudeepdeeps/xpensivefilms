@@ -26,12 +26,12 @@ Xpensive Films is a premier digital marketing, high-impact video editing, social
 - **Concerts & Live Events**
 
 ## Contact & Links
-- Website: https://xpensivefilms.vercel.app/
-- Contact Form: https://xpensivefilms.vercel.app/#Contact
+- Website: https://xpensivefilms.pages.dev/
+- Contact Form: https://xpensivefilms.pages.dev/#Contact
 - Instagram: https://www.instagram.com/_x.films
 - Inquiry Email: xpensivefilms.co@gmail.com
 
-- Technical Stack
+## Technical Stack
 - Frontend: React, Vite, TailwindCSS, Shadcn UI, Lucide Icons, AOS Animations
 - Database & Storage: Cloudflare D1 SQL, Cloudflare R2 Media Storage
-- Infrastructure: Vercel CDN & Serverless API Routes
+- Infrastructure: Cloudflare Pages & Pages Functions Edge Engine
