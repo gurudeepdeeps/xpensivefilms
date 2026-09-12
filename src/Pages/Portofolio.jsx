@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { Play, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { api } from '../services/api';
 import { getCloudflareImageUrl } from '../utils/cloudflareMedia';
-import WebsiteProjects from '../components/WebsiteProjects';
 import { Badge } from '../components/ui/badge';
 
 export default function FullWidthTabs() {
@@ -42,7 +41,10 @@ export default function FullWidthTabs() {
   }, []);
 
   const categories = useMemo(() => {
-    return [{ key: 'all', label: 'All', icon: 'grid' }, ...dbCategories];
+    const cleanDbCats = (dbCategories || []).filter(
+      (c) => c && c.key && c.key.toLowerCase() !== 'all'
+    );
+    return [{ key: 'all', label: 'All', icon: 'grid' }, ...cleanDbCats];
   }, [dbCategories]);
 
   const slides = useMemo(() => {
@@ -50,11 +52,11 @@ export default function FullWidthTabs() {
   }, [dbVideos]);
 
   const filteredCards = useMemo(() => {
-    if (activeCategory === 'all') {
+    if (activeCategory.toLowerCase() === 'all') {
       return slides.flatMap(slide => slide.cards);
     }
     return slides.flatMap(slide =>
-      slide.cards.filter(card => card.category === activeCategory)
+      slide.cards.filter(card => (card.category || '').toLowerCase() === activeCategory.toLowerCase())
     );
   }, [activeCategory, slides]);
 
@@ -65,16 +67,12 @@ export default function FullWidthTabs() {
     }
   }, [activeCategory, isMobile]);
 
-  // Add this effect to handle category changes on mobile
-  useEffect(() => {
-    if (isMobile && mobileScrollRef.current) {
-      mobileScrollRef.current.scrollLeft = 0;
-    }
-  }, [activeCategory, isMobile]);
-
   // filter slides based on activeCategory; returns indices of slides that have at least one card matching category
   const visibleSlideIndices = slides
-    .map((s, idx) => ({ idx, has: s.cards.some(c => activeCategory === 'all' ? true : c.category === activeCategory) }))
+    .map((s, idx) => ({
+      idx,
+      has: s.cards.some(c => activeCategory.toLowerCase() === 'all' ? true : (c.category || '').toLowerCase() === activeCategory.toLowerCase()),
+    }))
     .filter(x => x.has)
     .map(x => x.idx);
 
@@ -679,12 +677,12 @@ export default function FullWidthTabs() {
                     </div>
                   ) : (
                     slides.map((slide, sIdx) => {
-                      const visible = slide.cards.some(c => activeCategory === 'all' ? true : c.category === activeCategory);
+                      const visible = slide.cards.some(c => activeCategory.toLowerCase() === 'all' ? true : (c.category || '').toLowerCase() === activeCategory.toLowerCase());
                       return (
                         <div key={slide.id} className={`carousel-item ${sIdx === activeIndex && visible ? 'active' : ''}`}>
                           <div className="slider-wrapper">
                             {slide.cards.map((card, cIdx) => (
-                              (activeCategory === 'all' || card.category === activeCategory) && (
+                              (activeCategory.toLowerCase() === 'all' || (card.category || '').toLowerCase() === activeCategory.toLowerCase()) && (
                                 (() => {
                                   const videoKey = card.path || `desktop-${slide.id}-${cIdx}`;
                                   return (
@@ -738,9 +736,6 @@ export default function FullWidthTabs() {
             </div>
           )}
         </section>
-
-        {/* Website Projects carousel section */}
-        <WebsiteProjects />
 
         {/* Modal */}
         {modalOpen && (

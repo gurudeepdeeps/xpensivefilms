@@ -19,14 +19,9 @@ export const api = {
         videos: data.videos || [],
       };
     } catch (err) {
-      console.warn('Fallback portfolio data used:', err);
+      console.warn('Portfolio fetch fallback:', err);
       return {
-        categories: [
-          { key: 'all', label: 'All' },
-          { key: 'commercials', label: 'Commercials' },
-          { key: 'music_videos', label: 'Music Videos' },
-          { key: 'reels', label: 'Social Reels & Promos' },
-        ],
+        categories: [],
         videos: [],
       };
     }
@@ -52,52 +47,6 @@ export const api = {
 
   async deletePortfolioItem(id, table) {
     const res = await fetch(`${API_BASE}/portfolio?id=${encodeURIComponent(id)}&table=${encodeURIComponent(table)}`, {
-      method: 'DELETE',
-    });
-    return res.json();
-  },
-
-  // ==========================================
-  // Web Projects & Categories
-  // ==========================================
-  async getProjects() {
-    try {
-      const res = await fetch(`${API_BASE}/projects`);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      const data = await res.json();
-      return {
-        categories: data.categories || [],
-        projects: data.projects || [],
-      };
-    } catch (err) {
-      console.warn('Fallback web projects data used:', err);
-      return {
-        categories: [{ name: 'Web Applications' }, { name: 'E-Commerce' }, { name: 'Landing Pages' }],
-        projects: [],
-      };
-    }
-  },
-
-  async addWebCategory(name) {
-    const res = await fetch(`${API_BASE}/projects`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'add_category', name }),
-    });
-    return res.json();
-  },
-
-  async addWebProject(projectData) {
-    const res = await fetch(`${API_BASE}/projects`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'add_project', ...projectData }),
-    });
-    return res.json();
-  },
-
-  async deleteWebItem(id, table) {
-    const res = await fetch(`${API_BASE}/projects?id=${encodeURIComponent(id)}&table=${encodeURIComponent(table)}`, {
       method: 'DELETE',
     });
     return res.json();

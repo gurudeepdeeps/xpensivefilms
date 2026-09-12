@@ -1,6 +1,6 @@
 # 🚀 Xpensive Films Portfolio
 
-A modern, interactive portfolio website for Xpensive Films, showcasing creative projects, services, web creations, and brand identity.
+A modern, interactive portfolio website for Xpensive Films, showcasing creative projects, video editing reels, services, and brand identity.
 
 ## 📔 Table of Contents
 - [Features](#features)
@@ -8,7 +8,7 @@ A modern, interactive portfolio website for Xpensive Films, showcasing creative 
 - [Folder Structure](#folder-structure)
 - [Tech Stack](#tech-stack)
 - [Setup & Installation](#setup--installation)
-- [Supabase Backend & Authentication](#supabase-backend--authentication)
+- [Cloudflare D1 & R2 Backend](#cloudflare-d1--r2-backend)
 - [Admin Dashboard](#admin-dashboard)
 - [Services](#services)
 - [Portfolio](#portfolio)
@@ -18,9 +18,9 @@ A modern, interactive portfolio website for Xpensive Films, showcasing creative 
 
 ## ✨ Features
 - Responsive, animated landing page
-- Dynamic portfolio with categorized video and web creations showcases
-- Live real-time comments and web projects powered by Supabase
-- Admin Control Panel (`/admin`) for project & category management
+- Dynamic portfolio with categorized video showcase reels
+- Live real-time comments and video reels powered by Cloudflare D1 & R2
+- Admin Control Panel (`/admin`) for portfolio video & category management
 - Modern UI with Tailwind CSS, Shadcn UI, and custom gradients
 - Accessible cookie banner, privacy policy, terms, and custom 404 page
 
@@ -80,20 +80,18 @@ Xpensive Films Portfolio/
    npm run build
    ```
 
-## 🔑 Supabase Configuration
-1. Go to [Supabase Console](https://supabase.com/) and select project.
-2. Configure credentials in `src/supabase.js`:
-   ```js
-   import { createClient } from '@supabase/supabase-js';
-
-   const SUPABASE_URL = "https://rrwbwviwesnczadgjhde.supabase.co";
-   const SUPABASE_ANON_KEY = "your-anon-key";
-
-   export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+## 🔑 Cloudflare D1 & R2 Configuration
+1. Initialize Cloudflare D1 SQLite Database:
+   ```bash
+   npx wrangler d1 execute xpensive_films_db --file=./d1/schema.sql
    ```
+2. Configure Vercel / Cloudflare Environment Variables:
+   - `CLOUDFLARE_ACCOUNT_ID`
+   - `CLOUDFLARE_D1_DATABASE_ID`
+   - `CLOUDFLARE_API_TOKEN`
 
 ## 🛡️ Admin Dashboard
 Access the admin portal at `/admin` to manage:
-- Web Creations & Categories
+- Portfolio Videos & Categories
 - User Comments moderation
 - Contact form inquiry logs

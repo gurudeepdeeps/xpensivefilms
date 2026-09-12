@@ -27,12 +27,7 @@ export async function onRequestGet({ env, request }) {
       // Fallback in case D1 binding is not yet attached
       return jsonResponse({
         success: true,
-        categories: [
-          { key: 'all', label: 'All' },
-          { key: 'commercials', label: 'Commercials' },
-          { key: 'music_videos', label: 'Music Videos' },
-          { key: 'reels', label: 'Social Reels & Promos' },
-        ],
+        categories: [],
         videos: [],
       });
     }

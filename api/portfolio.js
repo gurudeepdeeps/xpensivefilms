@@ -24,12 +24,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, data: results || [] });
       }
 
-      const categories = (await queryD1('SELECT * FROM video_categories ORDER BY created_at ASC')) || [
-        { key: 'all', label: 'All' },
-        { key: 'commercials', label: 'Commercials' },
-        { key: 'music_videos', label: 'Music Videos' },
-        { key: 'reels', label: 'Social Reels & Promos' },
-      ];
+      const categories = (await queryD1('SELECT * FROM video_categories ORDER BY created_at ASC')) || [];
       const videos = (await queryD1('SELECT * FROM portfolio_videos ORDER BY created_at DESC')) || [];
 
       return res.status(200).json({

@@ -4,7 +4,6 @@ import {
   Lock,
   Unlock,
   MessageSquare,
-  Globe,
   Film,
   Mail,
   Trash2,
@@ -69,22 +68,6 @@ CREATE TABLE IF NOT EXISTS comments (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS web_categories (
-  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  name TEXT NOT NULL UNIQUE,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS web_projects (
-  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  title TEXT NOT NULL,
-  category TEXT,
-  description TEXT,
-  image TEXT,
-  url TEXT NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS video_categories (
   id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   key TEXT NOT NULL UNIQUE,
@@ -128,8 +111,6 @@ const AdminDashboard = () => {
 
   // Database Data States
   const [comments, setComments] = useState([]);
-  const [webProjects, setWebProjects] = useState([]);
-  const [webCategories, setWebCategories] = useState([]);
   const [videoCategories, setVideoCategories] = useState([]);
   const [portfolioVideos, setPortfolioVideos] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -137,8 +118,6 @@ const AdminDashboard = () => {
 
   // Upload States
   const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [openProjectModal, setOpenProjectModal] = useState(false);
   const [openVideoModal, setOpenVideoModal] = useState(false);
 
   // Notification State
@@ -170,16 +149,6 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Web Project Form State
-  const [newProject, setNewProject] = useState({
-    title: "",
-    category: "",
-    description: "",
-    image: "",
-    url: "",
-  });
-  const [newCategoryName, setNewCategoryName] = useState("");
-
   // Video Portfolio Form State
   const [newVideo, setNewVideo] = useState({
     title: "",
@@ -204,15 +173,7 @@ const AdminDashboard = () => {
         addLog("DATABASE", `Loaded ${commentsData.length} user comments.`);
       }
 
-      // 2. Fetch Web Projects & Categories
-      const webData = await api.getProjects();
-      if (webData) {
-        setWebProjects(webData.projects || []);
-        setWebCategories(webData.categories || []);
-        addLog("DATABASE", `Loaded ${webData.projects?.length || 0} web projects and ${webData.categories?.length || 0} categories.`);
-      }
-
-      // 3. Fetch Portfolio Videos & Categories
+      // 2. Fetch Portfolio Videos & Categories
       const portfolioData = await api.getPortfolio();
       if (portfolioData) {
         setPortfolioVideos(portfolioData.videos || []);
@@ -306,31 +267,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Upload Image File (R2 Storage Handler)
-  const handleImageFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingImage(true);
-    addLog("CLOUDFLARE", `Uploading image "${file.name}" to Cloudflare R2...`);
-
-    try {
-      const res = await api.uploadMedia(file);
-      if (res.success && res.url) {
-        setNewProject((prev) => ({ ...prev, image: res.url }));
-        addLog("SUCCESS", `Image uploaded successfully to R2: ${res.url}`);
-        notify("success", "Image Uploaded", `File "${file.name}" uploaded to Cloudflare R2!`);
-      } else {
-        throw new Error(res.message || "Failed to upload image");
-      }
-    } catch (err) {
-      addLog("ERROR", "Image upload failure", err, true);
-      notify("destructive", "Upload Error", err.message || "Failure uploading image file.");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   // Delete Comment
   const handleDeleteComment = async (id) => {
     if (window.confirm("Are you sure you want to delete this comment?")) {
@@ -347,90 +283,6 @@ const AdminDashboard = () => {
       } catch (err) {
         addLog("ERROR", "Failed to delete comment", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete comment.");
-      }
-    }
-  };
-
-  // Add New Web Category
-  const handleAddCategory = async (e) => {
-    e.preventDefault();
-    if (!newCategoryName.trim()) return;
-    const catName = newCategoryName.trim();
-    addLog("CLOUDFLARE", `Adding new category: "${catName}"`);
-    try {
-      const res = await api.addWebCategory(catName);
-      if (res.success) {
-        addLog("SUCCESS", `Category "${catName}" added to Cloudflare D1.`);
-        notify("success", "Category Added", `Web category "${catName}" added.`);
-        setNewCategoryName("");
-        fetchData();
-      } else {
-        throw new Error(res.message || "Failed to add category");
-      }
-    } catch (err) {
-      addLog("ERROR", "Failed to add category", err, true);
-      notify("destructive", "Category Error", err.message || "Failed to add category.");
-    }
-  };
-
-  // Delete Web Category
-  const handleDeleteCategory = async (catId) => {
-    if (window.confirm("Delete this category?")) {
-      addLog("CLOUDFLARE", `Deleting category ID: ${catId}...`);
-      try {
-        const res = await api.deleteWebItem(catId, "web_categories");
-        if (res.success) {
-          addLog("SUCCESS", `Category ${catId} deleted.`);
-          notify("success", "Category Deleted", "Web creation category deleted.");
-          fetchData();
-        } else {
-          throw new Error(res.message || "Delete failed");
-        }
-      } catch (err) {
-        addLog("ERROR", "Failed to delete category", err, true);
-        notify("destructive", "Delete Error", err.message || "Failed to delete category.");
-      }
-    }
-  };
-
-  // Add New Web Project
-  const handleAddProject = async (e) => {
-    e.preventDefault();
-    if (!newProject.title.trim() || !newProject.url.trim()) return;
-    addLog("CLOUDFLARE", `Adding new Web Creation project: "${newProject.title.trim()}"`);
-    try {
-      const res = await api.addWebProject(newProject);
-      if (res.success) {
-        addLog("SUCCESS", `Web Creation project "${newProject.title.trim()}" created successfully!`);
-        notify("success", "Web Project Saved", `Project "${newProject.title.trim()}" published live!`);
-        setNewProject({ title: "", category: "", description: "", image: "", url: "" });
-        setOpenProjectModal(false);
-        fetchData();
-      } else {
-        throw new Error(res.message || "Failed to create project");
-      }
-    } catch (err) {
-      addLog("ERROR", "Failed to add Web Project", err, true);
-      notify("destructive", "Project Error", err.message || "Failed to add web project.");
-    }
-  };
-
-  // Delete Web Project
-  const handleDeleteProject = async (projId) => {
-    if (window.confirm("Delete this web project?")) {
-      addLog("CLOUDFLARE", `Deleting Web Project ID: ${projId}...`);
-      try {
-        const res = await api.deleteWebItem(projId, "web_projects");
-        if (res.success) {
-          addLog("SUCCESS", `Web Project ${projId} deleted.`);
-          notify("success", "Project Deleted", "Web project deleted successfully.");
-          fetchData();
-        } else {
-          throw new Error(res.message || "Delete failed");
-        }
-      } catch (err) {
-        addLog("ERROR", "Failed to delete project", err, true);
-        notify("destructive", "Delete Error", err.message || "Failed to delete project.");
       }
     }
   };
@@ -691,12 +543,9 @@ const AdminDashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full bg-white/5 border border-white/10 p-1 rounded-xl">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full bg-white/5 border border-white/10 p-1 rounded-xl">
             <TabsTrigger value="overview" className="gap-2 text-xs">
               <Layers className="w-4 h-4" /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="web_creations" className="gap-2 text-xs">
-              <Globe className="w-4 h-4" /> Web Projects
             </TabsTrigger>
             <TabsTrigger value="videos" className="gap-2 text-xs">
               <Film className="w-4 h-4" /> Videos
@@ -711,7 +560,7 @@ const AdminDashboard = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2">
                   <CardDescription className="text-xs">Portfolio Videos</CardDescription>
@@ -719,16 +568,6 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-xs text-gray-400">Across {videoCategories.length} categories</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs">Web Creations</CardDescription>
-                  <CardTitle className="text-3xl font-bold text-blue-400">{webProjects.length}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-gray-400">Across {webCategories.length} categories</p>
                 </CardContent>
               </Card>
 
@@ -774,153 +613,6 @@ const AdminDashboard = () => {
                 <div className="flex items-center gap-2 text-xs text-emerald-400">
                   <Check className="w-4 h-4" /> Zero Supabase dependencies in client bundle
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Web Creations Management Tab */}
-          <TabsContent value="web_creations" className="space-y-6">
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl">Web Project Categories</CardTitle>
-                  <CardDescription>
-                    Add and delete categories for web creations.
-                  </CardDescription>
-                </div>
-                <form onSubmit={handleAddCategory} className="flex items-center gap-2">
-                  <Input
-                    placeholder="New Category Name"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="w-48 text-xs"
-                  />
-                  <Button type="submit" variant="default" size="sm" className="gap-1 text-xs">
-                    <Plus className="w-4 h-4" /> Add
-                  </Button>
-                </form>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {webCategories.length === 0 ? (
-                    <p className="text-sm text-gray-400">No categories found.</p>
-                  ) : (
-                    webCategories.map((cat) => (
-                      <Badge key={cat.id || cat.name} variant="secondary" className="px-3 py-1.5 flex items-center gap-2 text-xs">
-                        {cat.name}
-                        <button type="button" onClick={() => handleDeleteCategory(cat.id)} className="hover:text-red-400">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </Badge>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl">Web Projects</CardTitle>
-                  <CardDescription>Manage web apps and client websites.</CardDescription>
-                </div>
-                <Dialog open={openProjectModal} onOpenChange={setOpenProjectModal}>
-                  <DialogTrigger asChild>
-                    <Button variant="default" size="sm" className="gap-2 text-xs">
-                      <FolderPlus className="w-4 h-4" /> Add Project
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md bg-slate-900 border-white/10 text-white">
-                    <DialogHeader>
-                      <DialogTitle>Add Web Creation Project</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleAddProject} className="space-y-4 py-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-gray-300">Project Title</label>
-                        <Input
-                          placeholder="e.g. Modern Agency Platform"
-                          value={newProject.title}
-                          onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-gray-300">Category</label>
-                        <Select
-                          value={newProject.category}
-                          onChange={(e) => setNewProject({ ...newProject, category: e.target.value })}
-                        >
-                          <option value="">Select Category</option>
-                          {webCategories.map((c) => (
-                            <option key={c.id || c.name} value={c.name}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-gray-300">Live URL</label>
-                        <Input
-                          placeholder="https://example.com"
-                          value={newProject.url}
-                          onChange={(e) => setNewProject({ ...newProject, url: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1 border border-blue-500/20 bg-blue-500/5 p-3 rounded-lg">
-                        <label className="text-xs text-blue-300 font-semibold flex items-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5" /> Upload Thumbnail to Cloudflare R2
-                        </label>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageFileUpload}
-                          disabled={uploadingImage}
-                          className="text-xs"
-                        />
-                        <Input
-                          placeholder="Or image path/URL"
-                          value={newProject.image}
-                          onChange={(e) => setNewProject({ ...newProject, image: e.target.value })}
-                          className="mt-1.5"
-                        />
-                      </div>
-                      <Button type="submit" variant="default" className="w-full">
-                        Save Project
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                {webProjects.length === 0 ? (
-                  <p className="py-8 text-center text-gray-400">No web projects found.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>URL</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {webProjects.map((p) => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-semibold text-white">{p.title}</TableCell>
-                          <TableCell><Badge variant="secondary">{p.category}</Badge></TableCell>
-                          <TableCell className="text-xs truncate max-w-xs">{p.url}</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="destructive" size="sm" onClick={() => handleDeleteProject(p.id)}>
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

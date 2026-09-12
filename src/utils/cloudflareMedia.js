@@ -40,11 +40,3 @@ export const servicesImagesMap = {
   'podcast': 'podcast.webp',
 };
 
-/**
- * Website projects images configuration
- */
-export const websiteProjectsImagesMap = {
-  'home': 'home.png',
-  'about': 'about.png',
-  'works': 'works.png',
-};
