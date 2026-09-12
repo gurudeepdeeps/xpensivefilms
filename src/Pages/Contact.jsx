@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ResumePDF from '../assets/XpensiveMedia-Brochure.pdf';
+import { api } from "../services/api";
 
 const ContactPage = () => {
   const formRef = useRef();
