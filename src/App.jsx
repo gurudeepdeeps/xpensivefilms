@@ -16,7 +16,6 @@ import Terms from "./Pages/Terms";
 import NotFound from "./Pages/NotFound";
 import AdminDashboard from "./Pages/Admin";
 import Maintenance from "./Pages/Maintenance";
-import CookieConsent from "./components/CookieConsent";
 import LoadingScreen from "./components/LoadingScreen";
 
 // Maintenance mode active automatically until Sept 6, 2026
@@ -138,7 +137,6 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={IS_MAINTENANCE_MODE ? <Maintenance /> : <NotFound />} />
       </Routes>
-      <CookieConsent />
     </>
   );
 }
