@@ -56,6 +56,8 @@ const ContactPage = () => {
         throw new Error(resData?.message || "Failed to deliver message.");
       }
 
+      Swal.close();
+
       // Show success message
       Swal.fire({
         title: 'Message Sent Successfully!',
@@ -74,6 +76,7 @@ const ContactPage = () => {
       });
     } catch (error) {
       console.error("Contact Form Error:", error);
+      Swal.close();
       Swal.fire({
         title: 'Inquiry Notice',
         text: 'Your message was saved to our system. You can also contact us directly at xpensivefilms.co@gmail.com or via WhatsApp (+91 6363770057).',
