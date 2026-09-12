@@ -157,6 +157,7 @@ const AdminDashboard = () => {
     thumbnail: "",
     description: "",
   });
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
   const [newVideoCategoryName, setNewVideoCategoryName] = useState("");
 
   // Fetch all Cloudflare D1 data
@@ -242,35 +243,22 @@ const AdminDashboard = () => {
     setTimeout(() => setCopiedSql(false), 2500);
   };
 
-  // Upload Video File (R2 Storage Handler)
-  const handleVideoFileUpload = async (e) => {
+  // Select Video File (Stores file locally until "Save Video" is clicked)
+  const handleVideoFileSelect = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Immediately set filename/path as default fallback
-    const fallbackPath = file.name.startsWith('/') ? file.name : `/${file.name}`;
-    setNewVideo((prev) => ({ ...prev, path: prev.path || fallbackPath, title: prev.title || file.name.replace(/\.[^/.]+$/, "") }));
-
-    setUploadingVideo(true);
-    addLog("CLOUDFLARE", `Uploading video "${file.name}" to Cloudflare R2...`);
-
-    try {
-      const res = await api.uploadMedia(file);
-      if (res && res.success && res.url) {
-        setNewVideo((prev) => ({ ...prev, path: res.url }));
-        addLog("SUCCESS", `Video uploaded successfully to R2: ${res.url}`);
-        notify("success", "Video Uploaded", `File "${file.name}" uploaded to Cloudflare R2!`);
-      } else {
-        addLog("INFO", `Using local file reference: ${fallbackPath}`);
-        setNewVideo((prev) => ({ ...prev, path: fallbackPath }));
-      }
-    } catch (err) {
-      addLog("INFO", `Direct R2 upload not configured; set video path to "${fallbackPath}"`);
-      setNewVideo((prev) => ({ ...prev, path: fallbackPath }));
-      notify("info", "File Selected", `Path set to ${fallbackPath}`);
-    } finally {
-      setUploadingVideo(false);
+    if (!file) {
+      setSelectedVideoFile(null);
+      return;
     }
+
+    setSelectedVideoFile(file);
+    const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+    setNewVideo((prev) => ({
+      ...prev,
+      title: prev.title || fileNameWithoutExt,
+      path: prev.path || file.name,
+    }));
+    addLog("INFO", `Selected video file: "${file.name}" (will upload on Save)`);
   };
 
   // Delete Comment
@@ -335,32 +323,59 @@ const AdminDashboard = () => {
     }
   };
 
-  // Add New Video Item
+  // Add New Video Item (Performs R2 Upload & D1 Save together)
   const handleAddVideoItem = async (e) => {
     e.preventDefault();
-    if (!newVideo.path.trim()) return;
-    const videoTitle = newVideo.title.trim() || "Portfolio Reel";
-    addLog("CLOUDFLARE", `Adding Video Item to category "${newVideo.category}": ${newVideo.path}`);
+    let finalPath = newVideo.path.trim();
+
+    if (!finalPath && !selectedVideoFile) {
+      notify("destructive", "Missing Information", "Please choose a video file or enter a video URL.");
+      return;
+    }
+
+    setUploadingVideo(true);
+
     try {
+      // 1. If user selected a file, upload to Cloudflare R2 now
+      if (selectedVideoFile) {
+        addLog("CLOUDFLARE", `Uploading "${selectedVideoFile.name}" to Cloudflare R2 on save...`);
+        const uploadRes = await api.uploadMedia(selectedVideoFile);
+        if (uploadRes && uploadRes.success && uploadRes.url) {
+          finalPath = uploadRes.url;
+          addLog("SUCCESS", `Uploaded to Cloudflare R2: ${finalPath}`);
+        } else {
+          // Fallback if local or not configured
+          finalPath = finalPath.startsWith('/') ? finalPath : `/${finalPath || selectedVideoFile.name}`;
+        }
+      }
+
+      const videoTitle = newVideo.title.trim() || "Portfolio Reel";
+      addLog("CLOUDFLARE", `Saving Video Item to category "${newVideo.category}": ${finalPath}`);
+
+      // 2. Save metadata to Cloudflare D1
       const res = await api.addPortfolioVideo({
         title: videoTitle,
         category: newVideo.category || "general",
-        path: newVideo.path,
+        path: finalPath,
         thumbnail: newVideo.thumbnail || "",
         description: newVideo.description || "",
       });
+
       if (res.success) {
-        addLog("SUCCESS", `Portfolio Video added successfully!`);
-        notify("success", "Video Card Saved", "Portfolio video reel published live!");
+        addLog("SUCCESS", `Portfolio Video published successfully!`);
+        notify("success", "Video Saved", "Portfolio video reel uploaded and published live!");
         setNewVideo({ title: "", category: "", path: "", thumbnail: "", description: "" });
+        setSelectedVideoFile(null);
         setOpenVideoModal(false);
         fetchData();
       } else {
-        throw new Error(res.message || "Failed to save video");
+        throw new Error(res.message || "Failed to save video to database");
       }
     } catch (err) {
-      addLog("ERROR", "Failed to add video item", err, true);
-      notify("destructive", "Video Error", err.message || "Failed to add portfolio video item.");
+      addLog("ERROR", "Failed to upload or save video", err, true);
+      notify("destructive", "Video Error", err.message || "Failed to save portfolio video.");
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -700,7 +715,7 @@ const AdminDashboard = () => {
                         <Input
                           type="file"
                           accept="video/*"
-                          onChange={handleVideoFileUpload}
+                          onChange={handleVideoFileSelect}
                           disabled={uploadingVideo}
                           className="text-xs"
                         />
@@ -711,8 +726,8 @@ const AdminDashboard = () => {
                           className="mt-1.5"
                         />
                       </div>
-                      <Button type="submit" variant="default" className="w-full" disabled={!newVideo.path || uploadingVideo}>
-                        {uploadingVideo ? "Uploading..." : "Save Video"}
+                      <Button type="submit" variant="default" className="w-full" disabled={(!newVideo.path && !selectedVideoFile) || uploadingVideo}>
+                        {uploadingVideo ? "Uploading & Saving Video..." : "Save Video"}
                       </Button>
                     </form>
                   </DialogContent>
