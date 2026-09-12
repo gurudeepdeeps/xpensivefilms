@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import nodemailer from 'nodemailer'
 
+// Pre-load .env into process.env so imported modules see credentials
+const loadedEnv = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
+Object.assign(process.env, loadedEnv);
+
 import portfolioHandler from './api/portfolio.js';
 import commentsHandler from './api/comments.js';
 

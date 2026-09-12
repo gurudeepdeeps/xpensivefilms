@@ -3,9 +3,12 @@
  * Uses the official Cloudflare D1 REST API to execute SQL statements on the edge.
  */
 
-const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID || "";
-const CLOUDFLARE_D1_DATABASE_ID = process.env.CLOUDFLARE_D1_DATABASE_ID || process.env.CF_D1_DATABASE_ID || "9e5fde94-6ad0-414f-ab69-0fc0452c28ce";
-const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN || "";
+function getD1Credentials() {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID || "";
+  const databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID || process.env.CF_D1_DATABASE_ID || "9e5fde94-6ad0-414f-ab69-0fc0452c28ce";
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN || "";
+  return { accountId, databaseId, apiToken };
+}
 
 /**
  * Execute a SQL query on Cloudflare D1
@@ -14,17 +17,19 @@ const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || process.env.CF_
  * @returns {Promise<Array>} Array of rows
  */
 export async function queryD1(sql, params = []) {
-  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
+  const { accountId, databaseId, apiToken } = getD1Credentials();
+
+  if (!accountId || !apiToken) {
     console.warn("[Cloudflare D1] Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN in environment variables.");
     return null;
   }
 
-  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${CLOUDFLARE_D1_DATABASE_ID}/query`;
+  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
 
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${CLOUDFLARE_API_TOKEN}`,
+      "Authorization": `Bearer ${apiToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -51,17 +56,19 @@ export async function queryD1(sql, params = []) {
  * Execute a write query (INSERT / UPDATE / DELETE) on Cloudflare D1
  */
 export async function executeD1(sql, params = []) {
-  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
+  const { accountId, databaseId, apiToken } = getD1Credentials();
+
+  if (!accountId || !apiToken) {
     console.warn("[Cloudflare D1] Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN in environment variables.");
     return { success: true, simulated: true };
   }
 
-  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${CLOUDFLARE_D1_DATABASE_ID}/query`;
+  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
 
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${CLOUDFLARE_API_TOKEN}`,
+      "Authorization": `Bearer ${apiToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
