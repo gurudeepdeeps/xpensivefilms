@@ -106,6 +106,7 @@ export async function onRequestPost({ env, request }) {
 
 export async function onRequestDelete({ env, request }) {
   const db = env.DB || env.xpensive_films_db;
+  const bucket = env.MEDIA_BUCKET;
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
@@ -119,9 +120,26 @@ export async function onRequestDelete({ env, request }) {
     }
 
     const validTable = table === 'video_categories' ? 'video_categories' : 'portfolio_videos';
+
+    // If deleting a portfolio video, check if it has an R2 file to clean up
+    if (validTable === 'portfolio_videos') {
+      try {
+        const row = await db.prepare('SELECT path FROM portfolio_videos WHERE id = ?').bind(id).first();
+        if (row && row.path) {
+          // Extract R2 key (e.g. /media/1789236611181-euro-kids.mp4 -> 1789236611181-euro-kids.mp4)
+          const r2Key = row.path.startsWith('/media/') ? row.path.replace('/media/', '') : null;
+          if (r2Key && bucket) {
+            await bucket.delete(r2Key);
+          }
+        }
+      } catch (r2Err) {
+        console.warn('Could not delete R2 asset:', r2Err);
+      }
+    }
+
     await db.prepare(`DELETE FROM ${validTable} WHERE id = ?`).bind(id).run();
 
-    return jsonResponse({ success: true, message: `Record ${id} deleted successfully` });
+    return jsonResponse({ success: true, message: `Record ${id} and associated files deleted successfully` });
   } catch (err) {
     return jsonResponse({ success: false, error: err.message }, 500);
   }
