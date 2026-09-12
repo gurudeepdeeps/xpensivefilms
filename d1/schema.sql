@@ -45,13 +45,4 @@ CREATE TABLE IF NOT EXISTS contact_inquiries (
 
 -- Default Video Categories
 INSERT OR IGNORE INTO video_categories (id, key, label) VALUES
-  ('cat_all', 'all', 'All'),
-  ('cat_commercials', 'commercials', 'Commercials'),
-  ('cat_music_videos', 'music_videos', 'Music Videos'),
-  ('cat_reels', 'reels', 'Social Reels & Promos'),
-  ('cat_corporate', 'corporate', 'Corporate Films');
-
--- Sample Initial Comments
-INSERT OR IGNORE INTO comments (id, userName, content) VALUES
-  ('comm_1', 'Alex Rivera', 'Incredible cinematography and sound design on the latest commercial reel!'),
-  ('comm_2', 'Sarah Chen', 'The 3D interactive portfolio interface is super smooth and futuristic.');
+  ('cat_all', 'all', 'All');

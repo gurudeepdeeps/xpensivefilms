@@ -23,14 +23,7 @@ export async function onRequestGet({ env }) {
     if (!db) {
       return jsonResponse({
         success: true,
-        data: [
-          {
-            id: 'demo_1',
-            userName: 'Alex Rivera',
-            content: 'Incredible cinematography and sound design on the latest commercial reel!',
-            created_at: new Date().toISOString(),
-          },
-        ],
+        data: [],
       });
     }
 

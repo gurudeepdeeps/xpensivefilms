@@ -12,14 +12,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const results = (await queryD1('SELECT id, userName, content, created_at FROM comments ORDER BY created_at DESC LIMIT 100')) || [
-        {
-          id: 'demo_1',
-          userName: 'Alex Rivera',
-          content: 'Incredible cinematography and sound design on the latest commercial reel!',
-          created_at: new Date().toISOString(),
-        },
-      ];
+      const results = (await queryD1('SELECT id, userName, content, created_at FROM comments ORDER BY created_at DESC LIMIT 100')) || [];
       return res.status(200).json({ success: true, data: results });
     }
 
