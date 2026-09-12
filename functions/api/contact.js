@@ -157,7 +157,7 @@ async function sendEmailNotification({ env, name, email, message, type, date }) 
 
   const targetEmail = 'xpensivefilms.co@gmail.com';
 
-  // 1. Try Resend if RESEND_API_KEY is configured in Cloudflare Pages
+  // 1. Try Resend (Primary direct email service)
   const resendApiKey = env.RESEND_API_KEY || env.RESEND_KEY;
   if (resendApiKey) {
     try {
@@ -178,6 +178,9 @@ async function sendEmailNotification({ env, name, email, message, type, date }) 
       if (resendRes.ok) {
         console.log('Email sent successfully via Resend');
         return;
+      } else {
+        const errorText = await resendRes.text();
+        console.warn('Resend API returned error:', resendRes.status, errorText);
       }
     } catch (err) {
       console.warn('Resend send failed:', err.message);
