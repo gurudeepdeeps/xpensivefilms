@@ -86,11 +86,30 @@ export const api = {
   // ==========================================
   // Contact & Inquiries
   // ==========================================
+  async getInquiries() {
+    try {
+      const res = await fetch(`${API_BASE}/contact`);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+      return data.data || [];
+    } catch (err) {
+      console.warn('Fallback inquiries fetch:', err);
+      return [];
+    }
+  },
+
   async sendContact(payload) {
     const res = await fetch(`${API_BASE}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async deleteInquiry(id) {
+    const res = await fetch(`${API_BASE}/contact?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
     });
     return res.json();
   },

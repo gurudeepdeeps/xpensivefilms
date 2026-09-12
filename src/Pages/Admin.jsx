@@ -111,6 +111,7 @@ const AdminDashboard = () => {
 
   // Database Data States
   const [comments, setComments] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
   const [videoCategories, setVideoCategories] = useState([]);
   const [portfolioVideos, setPortfolioVideos] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -174,7 +175,14 @@ const AdminDashboard = () => {
         addLog("DATABASE", `Loaded ${commentsData.length} user comments.`);
       }
 
-      // 2. Fetch Portfolio Videos & Categories
+      // 2. Fetch Inquiries / Get In Touch Submissions
+      const inquiriesData = await api.getInquiries();
+      if (inquiriesData) {
+        setInquiries(inquiriesData);
+        addLog("DATABASE", `Loaded ${inquiriesData.length} contact inquiries.`);
+      }
+
+      // 3. Fetch Portfolio Videos & Categories
       const portfolioData = await api.getPortfolio();
       if (portfolioData) {
         setPortfolioVideos(portfolioData.videos || []);
@@ -277,6 +285,26 @@ const AdminDashboard = () => {
       } catch (err) {
         addLog("ERROR", "Failed to delete comment", err, true);
         notify("destructive", "Delete Error", err.message || "Failed to delete comment.");
+      }
+    }
+  };
+
+  // Delete Contact Inquiry
+  const handleDeleteInquiry = async (id) => {
+    if (window.confirm("Are you sure you want to delete this client inquiry?")) {
+      addLog("DATABASE", `Deleting inquiry ID: ${id}...`);
+      try {
+        const res = await api.deleteInquiry(id);
+        if (res.success) {
+          addLog("SUCCESS", `Inquiry ${id} deleted.`);
+          notify("success", "Inquiry Deleted", "Client inquiry deleted successfully.");
+          fetchData();
+        } else {
+          throw new Error(res.message || "Delete failed");
+        }
+      } catch (err) {
+        addLog("ERROR", "Failed to delete inquiry", err, true);
+        notify("destructive", "Delete Error", err.message || "Failed to delete inquiry.");
       }
     }
   };
@@ -564,12 +592,15 @@ const AdminDashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full bg-white/5 border border-white/10 p-1 rounded-xl">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full bg-white/5 border border-white/10 p-1 rounded-xl">
             <TabsTrigger value="overview" className="gap-2 text-xs">
               <Layers className="w-4 h-4" /> Overview
             </TabsTrigger>
             <TabsTrigger value="videos" className="gap-2 text-xs">
-              <Film className="w-4 h-4" /> Videos
+              <Film className="w-4 h-4" /> Videos ({portfolioVideos.length})
+            </TabsTrigger>
+            <TabsTrigger value="inquiries" className="gap-2 text-xs">
+              <Mail className="w-4 h-4" /> Inquiries ({inquiries.length})
             </TabsTrigger>
             <TabsTrigger value="comments" className="gap-2 text-xs">
               <MessageSquare className="w-4 h-4" /> Comments ({comments.length})
@@ -581,7 +612,7 @@ const AdminDashboard = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2">
                   <CardDescription className="text-xs">Portfolio Videos</CardDescription>
@@ -589,6 +620,16 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-xs text-gray-400">Across {videoCategories.length} categories</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Client Inquiries</CardDescription>
+                  <CardTitle className="text-3xl font-bold text-blue-400">{inquiries.length}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-400">Get In Touch Messages</p>
                 </CardContent>
               </Card>
 
@@ -754,6 +795,54 @@ const AdminDashboard = () => {
                           <TableCell className="text-xs truncate max-w-xs font-mono">{vid.path}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="destructive" size="sm" onClick={() => handleDeleteVideoItem(vid.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Inquiries Tab */}
+          <TabsContent value="inquiries" className="space-y-6">
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader>
+                <CardTitle className="text-xl">Client Inquiries & Messages</CardTitle>
+                <CardDescription>Messages received via the "Get in Touch" contact form stored in Cloudflare D1.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {inquiries.length === 0 ? (
+                  <p className="py-8 text-center text-gray-400">No contact inquiries yet.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Client</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Received</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inquiries.map((inq) => (
+                        <TableRow key={inq.id}>
+                          <TableCell className="font-semibold text-white">{inq.name || "Anonymous"}</TableCell>
+                          <TableCell className="text-xs font-mono text-purple-300">
+                            <a href={`mailto:${inq.email}`} className="hover:underline flex items-center gap-1">
+                              <Mail className="w-3.5 h-3.5" /> {inq.email}
+                            </a>
+                          </TableCell>
+                          <TableCell className="text-xs max-w-md break-words">{inq.message || "-"}</TableCell>
+                          <TableCell className="text-xs text-gray-400 whitespace-nowrap">
+                            {inq.created_at ? new Date(inq.created_at).toLocaleString() : "Recent"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteInquiry(inq.id)}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </TableCell>

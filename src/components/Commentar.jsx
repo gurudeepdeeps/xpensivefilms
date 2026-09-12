@@ -181,37 +181,55 @@ const Komentar = () => {
 
     return (
         <section id="comment" className="py-2 bg-transparent w-full">
-            <div className="w-full mx-auto px-1 sm:px-4">
-                <h2 
-                    className="text-3xl sm:text-4xl font-bold text-center text-white mb-8"
-                    data-aos="fade-up"
-                    data-aos-duration="800"
-                >
-                    <span className="relative inline-block">
-                        Comments
-                        <span className="absolute inset-x-0 bottom-0 h-2 bg-indigo-600 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
-                    </span>
-                </h2>
-
-                <div className="w-full mx-auto bg-transparent border-0 p-0 shadow-none">
-                    <h3 className="text-xl font-semibold text-white mb-4">Leave a Comment</h3>
-                    <CommentForm onSubmit={handleSubmitComment} isSubmitting={isSubmitting} error={error} />
+            <div className="w-full mx-auto">
+                <div className="text-center mb-8">
+                    <h2 
+                        className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+                        data-aos="fade-up"
+                        data-aos-duration="800"
+                    >
+                        Community Feedback & Reviews
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-2">
+                        Share your thoughts or read reviews from our clients and collaborators.
+                    </p>
                 </div>
 
-                <div className="max-w-3xl mx-auto mt-12 space-y-6">
-                    {comments.length === 0 ? (
-                        <p className="text-center text-gray-400 text-lg" data-aos="fade-up" data-aos-duration="1000">
-                            No comments yet. Be the first to leave one!
-                        </p>
-                    ) : (
-                        comments.map((comment, index) => (
-                            <Comment 
-                                key={comment.id || index} 
-                                comment={comment} 
-                                formatDate={formatDate}
-                            />
-                        ))
-                    )}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left / Top: Leave Comment Form */}
+                    <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md">
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                            Leave a Comment
+                        </h3>
+                        <CommentForm onSubmit={handleSubmitComment} isSubmitting={isSubmitting} error={error} />
+                    </div>
+
+                    {/* Right / Bottom: Comments List */}
+                    <div className="lg:col-span-7 space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-semibold text-white">
+                                All Comments ({comments.length})
+                            </h3>
+                        </div>
+
+                        {comments.length === 0 ? (
+                            <div className="text-center py-12 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400">
+                                <p className="text-base font-medium">No comments yet.</p>
+                                <p className="text-xs text-gray-500 mt-1">Be the first to share your feedback above!</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-indigo-500/20">
+                                {comments.map((comment, index) => (
+                                    <Comment 
+                                        key={comment.id || index} 
+                                        comment={comment} 
+                                        formatDate={formatDate}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </section>
