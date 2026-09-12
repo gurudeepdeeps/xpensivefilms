@@ -1,29 +1,67 @@
+# Robots.txt for Xpensive Films (X Films / Xpensive Media)
+# https://xpensivefilms.pages.dev/
+
 # Standard Search Engine Crawlers
 User-agent: *
 Allow: /
 Disallow: /admin
 
-# AI Agents & LLM Crawlers (OpenAI GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended)
+# Google Search & Google AI (SGE / Gemini / AI Overviews)
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Video
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Bing / Microsoft Copilot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+
+# OpenAI Crawlers (SearchGPT, ChatGPT)
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
+# Anthropic Claude Crawlers
 User-agent: ClaudeBot
 Allow: /
 
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity AI Crawler
 User-agent: PerplexityBot
 Allow: /
 
-User-agent: Google-Extended
+# Apple Intelligence & Siri Crawlers
+User-agent: Applebot
 Allow: /
 
 User-agent: Applebot-Extended
 Allow: /
 
+# Other Major Search Engines
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
 User-agent: cohere-ai
 Allow: /
 
-# Sitemap & LLM Documentation
+# Sitemap & LLM Knowledge Endpoints
 Sitemap: https://xpensivefilms.pages.dev/sitemap.xml

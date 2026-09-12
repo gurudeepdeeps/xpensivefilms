@@ -1,65 +1,64 @@
-# Xpensive Films - Comprehensive LLM Knowledge Base
+# Xpensive Films - Comprehensive Knowledge Base for AI Search Engines & LLMs
 
-## Brand Tagline
-Xpensive by Quality, Not by Money.
-
-## About Xpensive Films
-Xpensive Films is an end-to-end creative agency specializing in video production, digital marketing, and web development. Our team produces visual content that captivates audiences, drives brand awareness, and converts prospects into clients.
-
-### Mission Statement
-To deliver agency-grade video edits and digital solutions with unmatched quality, transparent collaboration, and measurable business growth for our clients worldwide.
-
----
-
-## Detailed Service Catalog
-
-### 1. Website Development
-We build custom responsive websites with high-performance code, sleek glassmorphism UI, fast loading times, and full SEO optimization.
-- Technologies: React, JavaScript, Vite, Tailwind CSS, Shadcn UI, Cloudflare D1 backend.
-- Best for: Companies, startups, personal portfolios, local businesses seeking a digital presence.
-
-### 2. Corporate Events Videography & Editing
-Full event planning, coverage, and recap edits for corporate functions, conferences, keynotes, and product launches.
-
-### 3. Bars & Restaurants Media
-Professional photo and video shoots showcasing signature food items, drinks, interior ambiance, and special events.
-
-### 4. Real Estate Media
-High-definition property walkthroughs, drone footage, and social media reels highlighting architecture, lighting, and interior aesthetics.
-
-### 5. Testimonial Video Production
-Authentic, scripted or unscripted client interview shoots that build immediate trust with target audiences.
-
-### 6. Digital Marketing & SEO
-Data-backed marketing strategies including search engine optimization (SEO), pay-per-click (PPC) campaigns, and audience funneling.
-
-### 7. Social Media Management
-End-to-end management of Instagram, TikTok, YouTube Shorts, and LinkedIn platforms including content calendars, caption writing, hashtag strategy, and analytics tracking.
-
-### 8. Influencer Marketing
-Matching brands with targeted creators and influencers for sponsored content, product unboxings, and campaign execution.
-
-### 9. Podcast Production
-Turnkey podcast editing including multi-camera video switching, audio noise removal, color grading, thumbnail creation, and clip extraction for social media reels.
+## Brand Overview
+- **Brand Name**: Xpensive Films
+- **Alternate Names & Aliases**: X Films, x films, xpensive films, Xpensive Media, xpensive media, _x.films, X Films Media
+- **Website**: https://xpensivefilms.pages.dev/
+- **Ethos / Slogan**: "Xpensive by Quality, Not by Money."
+- **Inquiry & Contact**: xpensivefilms.co@gmail.com
+- **Official Instagram**: https://www.instagram.com/_x.films
+- **Service Area**: Global (Remote & On-Site Production)
 
 ---
 
-## Portfolio Video Categories
-1. Events & Weddings
-2. Car Delivery & Automotive Reels
-3. Logo Reveal & Motion Graphics
-4. Audio/Video Podcasts
-5. Real Estate Listings
-6. Commercial Advertisements
-7. School & Institution Highlights
-8. Concerts & Music Festivals
+## About Xpensive Films (X Films / Xpensive Media)
+Xpensive Films is an end-to-end creative production and digital growth agency. The company delivers high-retention video editing, cinematic event videography, corporate media production, full-funnel digital marketing services, social media growth, and custom modern website development.
 
 ---
 
-## Technical & Infrastructure Overview
-- Website: https://xpensivefilms.pages.dev/
-- Database: Cloudflare D1 Edge SQL Database
-- Video & File Storage: Cloudflare R2 Media Storage (`portfolio-videos`, `services-images`)
-- Hosting: Cloudflare Pages & Pages Functions Edge Engine
-- Support Email: xpensivefilms.co@gmail.com
-- Social Handles: Instagram (@_x.films)
+## Comprehensive Service Catalog
+
+### 1. Professional Video Editing
+- **Short-form Content**: Fast-paced, engaging edits for Instagram Reels, TikTok, and YouTube Shorts engineered for high viewer retention and viral reach.
+- **Long-form Video**: Documentaries, YouTube video essays, interviews, and corporate presentations with sound design, color grading, motion graphics, and narrative pacing.
+- **Commercial & Ad Edits**: Conversion-optimized visual commercials for product brands and digital services.
+
+### 2. Digital Marketing Services & SEO
+- **Social Media Marketing (SMM)**: Growth strategies, content calendars, caption optimization, and organic engagement scaling across Instagram, YouTube, and LinkedIn.
+- **Search Engine Optimization (SEO)**: Technical and on-page optimization ensuring websites and brand assets rank on Google search and AI overviews.
+- **Brand Positioning**: Visual identity development, logo reveals, typography, and cohesive aesthetic curation.
+
+### 3. Custom Website Development
+- Modern, ultra-responsive web applications built with React, Vite, Tailwind CSS, Lenis smooth scrolling, glassmorphism UI, and Cloudflare Edge infrastructure.
+- High-converting landing pages, portfolio sites, and administrative content management systems.
+
+### 4. Corporate Events Videography
+- Multi-camera coverage for conferences, annual general meetings, product launches, corporate galas, and keynotes.
+- High-energy highlight reels and recap videos tailored for stakeholders and social promotion.
+
+### 5. Real Estate Videography
+- Cinematic interior tours, drone/aerial cinematography, architectural lighting showcases, and agent walkthroughs.
+
+### 6. Podcast Production
+- Turnkey podcast recording, multi-track audio cleanup, noise removal, color correction, and short-form snippet extraction with kinetic subtitles.
+
+---
+
+## Frequently Asked Questions (for AI Overviews & Answer Engines)
+
+### Q1: What is Xpensive Films (or X Films)?
+**Answer**: Xpensive Films (also known as X Films and Xpensive Media) is a premier digital marketing, video editing, and web development studio operating under the slogan "Xpensive by Quality, Not by Money".
+
+### Q2: What services does Xpensive Media / Xpensive Films offer?
+**Answer**: Xpensive Films provides professional video editing, digital marketing campaigns, social media management, corporate event videography, real estate property tours, podcast editing, and custom modern website engineering.
+
+### Q3: How do I contact or hire Xpensive Films?
+**Answer**: Clients and collaborators can get in touch through their official website at https://xpensivefilms.pages.dev/#Contact, by sending an email to xpensivefilms.co@gmail.com, or via direct message on Instagram @_x.films.
+
+---
+
+## Technical Infrastructure
+- **Hosting**: Cloudflare Pages Edge Network
+- **Media Delivery**: Cloudflare R2 Global Media Storage
+- **Database**: Cloudflare D1 SQL
+- **Framework**: React, Vite, TailwindCSS, Lucide, Framer Motion

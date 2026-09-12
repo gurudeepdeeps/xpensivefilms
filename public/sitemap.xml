@@ -4,44 +4,60 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- Home Page -->
+  <!-- Primary Landing Page (Home, Services, Portfolio, Contact) -->
   <url>
     <loc>https://xpensivefilms.pages.dev/</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- About Us Section -->
+  <!-- Services Showcase Page -->
+  <url>
+    <loc>https://xpensivefilms.pages.dev/services</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- About Section -->
   <url>
     <loc>https://xpensivefilms.pages.dev/#About</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- Services Section -->
-  <url>
-    <loc>https://xpensivefilms.pages.dev/#Services</loc>
-    <lastmod>2026-08-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Portfolio Showcase Section -->
+  <!-- Portfolio Showcase -->
   <url>
     <loc>https://xpensivefilms.pages.dev/#Portofolio</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-09-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Contact Us Section -->
+  <!-- Contact & Hiring Section -->
   <url>
     <loc>https://xpensivefilms.pages.dev/#Contact</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://xpensivefilms.pages.dev/privacy-policy</loc>
+    <lastmod>2026-09-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Terms & Conditions -->
+  <url>
+    <loc>https://xpensivefilms.pages.dev/terms</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
 </urlset>
